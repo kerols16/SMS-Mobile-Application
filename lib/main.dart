@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:school_test/view/screens/admin_dashboard.dart';
 import 'package:school_test/view/screens/login_screen.dart';
 import 'package:school_test/view/screens/parent_dashboard.dart';
@@ -6,8 +7,9 @@ import 'package:school_test/view/screens/student_dashboard.dart';
 import 'package:school_test/view/screens/teacher_dashboard.dart';
 
 
-void main() {
+void main() async{
   runApp(const MyApp());
+  await InitDependency ;
 }
 
 class MyApp extends StatelessWidget {
@@ -18,6 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'EduManage UI Demo',
       debugShowCheckedModeBanner: false,
+    
       theme: ThemeData(
         primaryColor: const Color(0xFF2563EB),
         scaffoldBackgroundColor: const Color(0xFFF9FAFB),
