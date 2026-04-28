@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:school_test/core/constents/routes_contents.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,21 +13,37 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showPassword = false;
   bool _rememberMe = false;
   String? _selectedRole;
-  String? _selectedChild;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   final List<Map<String, dynamic>> _roles = [
-    {'id': 'admin', 'title': 'Admin', 'icon': Icons.shield, 'color': Colors.purple},
-    {'id': 'teacher', 'title': 'Teacher', 'icon': Icons.menu_book, 'color': Colors.blue},
-    {'id': 'student', 'title': 'Student', 'icon': Icons.person, 'color': Colors.green},
-    {'id': 'parent', 'title': 'Parent', 'icon': Icons.people, 'color': Colors.orange},
+    {
+      'id': Routes.admin,
+      'title': 'Admin',
+      'icon': Icons.shield,
+      'color': Colors.purple,
+    },
+    {
+      'id': Routes.teacher,
+      'title': 'Teacher',
+      'icon': Icons.menu_book,
+      'color': Colors.blue,
+    },
+    {
+      'id': Routes.student,
+      'title': 'Student',
+      'icon': Icons.person,
+      'color': Colors.green,
+    },
+    {
+      'id': Routes.parent,
+      'title': 'Parent',
+      'icon': Icons.people,
+      'color': Colors.orange,
+    },
   ];
 
-  final List<Map<String, String>> _children = [
-    {'id': '1', 'name': 'Alex Johnson', 'grade': 'Grade 9A', 'avatar': 'AJ'},
-    {'id': '2', 'name': 'Emma Johnson', 'grade': 'Grade 7B', 'avatar': 'EJ'},
-  ];
+ 
 
   bool get _hasCredentials =>
       _emailController.text.isNotEmpty && _passwordController.text.isNotEmpty;
@@ -53,7 +71,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // المحتوى الرئيسي
             SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 100), // مساحة للـ Bottom Section
+              padding: const EdgeInsets.only(
+                bottom: 100,
+              ), // مساحة للـ Bottom Section
               child: Column(
                 children: [
                   // الهيدر مع الشعار والنص
@@ -62,24 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Stack(
                       children: [
                         // Language Toggle
-                        Positioned(
-                          top: 16,
-                          right: 16,
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.language,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                        // Logo & Welcome
+                       // Logo & Welcome
                         Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -120,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // الكارد الأبيض - بدون Transform.translate
+                  //Transform.translate
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
@@ -157,15 +160,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
                                   hintText: 'Enter your email or phone',
-                                  hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF9CA3AF), size: 20),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.email_outlined,
+                                    color: Color(0xFF9CA3AF),
+                                    size: 20,
+                                  ),
                                   suffixIcon: _emailController.text.isNotEmpty
                                       ? IconButton(
-                                    icon: const Icon(Icons.clear, size: 18, color: Color(0xFF9CA3AF)),
-                                    onPressed: () {
-                                      setState(() => _emailController.clear());
-                                    },
-                                  )
+                                          icon: const Icon(
+                                            Icons.clear,
+                                            size: 18,
+                                            color: Color(0xFF9CA3AF),
+                                          ),
+                                          onPressed: () {
+                                            setState(
+                                              () => _emailController.clear(),
+                                            );
+                                          },
+                                        )
                                       : null,
                                   filled: true,
                                   fillColor: const Color(0xFFF3F4F6),
@@ -179,7 +194,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF2563EB),
+                                      width: 1.5,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -211,16 +229,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: !_showPassword,
                                 decoration: InputDecoration(
                                   hintText: 'Enter your password',
-                                  hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-                                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF9CA3AF), size: 20),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: Color(0xFF9CA3AF),
+                                    size: 20,
+                                  ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _showPassword ? Icons.visibility_off : Icons.visibility,
+                                      _showPassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
                                       color: const Color(0xFF9CA3AF),
                                       size: 20,
                                     ),
                                     onPressed: () {
-                                      setState(() => _showPassword = !_showPassword);
+                                      setState(
+                                        () => _showPassword = !_showPassword,
+                                      );
                                     },
                                   ),
                                   filled: true,
@@ -235,7 +263,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF2563EB),
+                                      width: 1.5,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -249,9 +280,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: TextButton(
                                   onPressed: () {},
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 12,
+                                    ),
                                     minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   child: const Text(
                                     'Forgot password?',
@@ -278,157 +313,79 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            GridView.builder(
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 1.1,
-                              ),
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: _roles.length,
-                              itemBuilder: (context, index) {
+
+                            Row(
+                              children: List.generate(_roles.length, (index) {
                                 final role = _roles[index];
                                 final isSelected = _selectedRole == role['id'];
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedRole = role['id'] as String;
-                                      _selectedChild = null;
-                                    });
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? (role['color'] as Color).withOpacity(0.1)
-                                          : Colors.white,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? role['color'] as Color
-                                            : Colors.grey.shade300,
-                                        width: 1.5,
-                                      ),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          role['icon'] as IconData,
-                                          size: 28,
-                                          color: isSelected
-                                              ? role['color'] as Color
-                                              : Colors.grey.shade400,
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          role['title'] as String,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color: isSelected
-                                                ? role['color'] as Color
-                                                : Colors.grey.shade600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
 
-                          // Child Selector (for Parent role)
-                          if (_selectedRole == 'parent') ...[
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Select your child:',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF374151),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              height: 100,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: _children.length,
-                                itemBuilder: (context, index) {
-                                  final child = _children[index];
-                                  final isSelected = _selectedChild == child['id'];
-                                  return GestureDetector(
+                                return Expanded(
+                                  child: GestureDetector(
                                     onTap: () {
-                                      setState(() => _selectedChild = child['id']);
+                                      setState(() {
+                                        _selectedRole = role['id'] as String;
+                                        
+                                      });
                                     },
-                                    child: Container(
-                                      width: 100,
-                                      margin: const EdgeInsets.only(right: 12),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      margin: EdgeInsets.only(
+                                        right: index == _roles.length - 1
+                                            ? 0
+                                            : 8,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? Colors.blue.shade50
+                                            ? (role['color'] as Color)
+                                                  .withOpacity(0.1)
                                             : Colors.white,
                                         border: Border.all(
                                           color: isSelected
-                                              ? Colors.blue.shade500
+                                              ? role['color'] as Color
                                               : Colors.grey.shade300,
                                           width: 1.5,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(16),
                                       ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              role['icon'] as IconData,
+                                              size: 24,
                                               color: isSelected
-                                                  ? Colors.blue.shade200
-                                                  : Colors.grey.shade200,
-                                              shape: BoxShape.circle,
+                                                  ? role['color'] as Color
+                                                  : Colors.grey.shade400,
                                             ),
-                                            child: Center(
-                                              child: Text(
-                                                child['avatar']!,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: isSelected
-                                                      ? Colors.blue.shade700
-                                                      : Colors.grey.shade600,
-                                                ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              role['title'] as String,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: isSelected
+                                                    ? role['color'] as Color
+                                                    : Colors.grey.shade600,
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            child['name']!.split(' ').first,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF374151),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            child['grade']!,
-                                            style: const TextStyle(
-                                              fontSize: 9,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
+                                  ),
+                                );
+                              }),
                             ),
                           ],
+
+                       
 
                           const SizedBox(height: 16),
                         ],
@@ -436,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // مساحة فارغة قبل الـ Bottom Section
+                  // Bottom Section
                   const SizedBox(height: 100),
                 ],
               ),
@@ -474,7 +431,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               onChanged: (value) {
                                 setState(() => _rememberMe = value ?? false);
                               },
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             ),
                           ),
@@ -498,28 +456,30 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _hasCredentials && _selectedRole != null
                               ? () {
-                            String route = '/';
-                            switch (_selectedRole) {
-                              case 'admin':
-                                route = '/admin';
-                                break;
-                              case 'teacher':
-                                route = '/teacher';
-                                break;
-                              case 'student':
-                                route = '/student';
-                                break;
-                              case 'parent':
-                                route = '/parent';
-                                break;
-                            }
-                            Navigator.pushNamed(context, route);
-                          }
+                                  String route = '/';
+                                  switch (_selectedRole) {
+                                    case '/admin':
+                                      route = Routes.admin;
+                                      break;
+                                    case '/teacher':
+                                      route = Routes.teacher;
+                                      break;
+                                    case '/student':
+                                      route = Routes.student;
+                                      break;
+                                    case '/parent':
+                                      route = Routes.parent;
+                                      break;
+                                  }
+                                 context.go(route);
+                                }
                               : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),
                             foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFF2563EB).withOpacity(0.4),
+                            disabledBackgroundColor: const Color(
+                              0xFF2563EB,
+                            ).withOpacity(0.4),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -537,52 +497,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                     
 
-                      // Secondary Options
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text(
-                              'Sign up',
-                              style: TextStyle(
-                                color: Color(0xFF2563EB),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 4),
-                            child: Text(
-                              '•',
-                              style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 14),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text(
-                              'Trouble signing in?',
-                              style: TextStyle(
-                                color: Color(0xFF6B7280),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                     
                     ],
                   ),
                 ),

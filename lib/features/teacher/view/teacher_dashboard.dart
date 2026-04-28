@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav.dart';
+import '../../../core/widgets/bottom_nav.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});

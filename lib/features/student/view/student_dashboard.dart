@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_nav.dart';
+import '../../../core/widgets/bottom_nav.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -16,7 +16,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     NavItem(id: 'schedule', label: 'Schedule', icon: Icons.calendar_today),
     NavItem(id: 'assignments', label: 'Assignments', icon: Icons.assignment),
     NavItem(id: 'grades', label: 'Grades', icon: Icons.grade),
-    NavItem(id: 'more', label: 'More', icon: Icons.more_horiz),
+    NavItem(id: 'more', label: 'Profile', icon: Icons.more_horiz),
   ];
 
   @override

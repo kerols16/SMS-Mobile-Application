@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:school_test/view/screens/admin_dashboard.dart';
-import 'package:school_test/view/screens/login_screen.dart';
-import 'package:school_test/view/screens/parent_dashboard.dart';
-import 'package:school_test/view/screens/student_dashboard.dart';
-import 'package:school_test/view/screens/teacher_dashboard.dart';
+import 'package:school_test/core/router/app_router.dart';
+import 'package:school_test/features/admin/view/admin_dashboard.dart';
+import 'package:school_test/features/auth/view/login_screen.dart';
+import 'package:school_test/features/parent/view/parent_dashboard.dart';
+import 'package:school_test/features/student/view/student_dashboard.dart';
+import 'package:school_test/features/teacher/view/teacher_dashboard.dart';
 
 
 void main() async{
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'EduManage UI Demo',
       debugShowCheckedModeBanner: false,
     
@@ -31,14 +32,8 @@ class MyApp extends StatelessWidget {
           foregroundColor: Color(0xFF374151),
         ),
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const LoginScreen(),
-        '/admin': (context) => const AdminDashboard(),
-        '/teacher': (context) => const TeacherDashboard(),
-        '/student': (context) => const StudentDashboard(),
-        '/parent': (context) => const ParentDashboard(),
-      },
+      routerConfig: router,
+      
     );
   }
 }
