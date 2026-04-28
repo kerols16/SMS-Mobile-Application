@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:school_test/core/di/injection_container.dart';
 import 'package:school_test/core/router/app_router.dart';
-import 'package:school_test/features/admin/view/admin_dashboard.dart';
-import 'package:school_test/features/auth/view/login_screen.dart';
-import 'package:school_test/features/parent/view/parent_dashboard.dart';
-import 'package:school_test/features/student/view/student_dashboard.dart';
-import 'package:school_test/features/teacher/view/teacher_dashboard.dart';
 
-
-void main() async{
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await setupDependencies();
   runApp(const MyApp());
-  await InitDependency ;
 }
 
 class MyApp extends StatelessWidget {
@@ -21,7 +16,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'EduManage UI Demo',
       debugShowCheckedModeBanner: false,
-    
       theme: ThemeData(
         primaryColor: const Color(0xFF2563EB),
         scaffoldBackgroundColor: const Color(0xFFF9FAFB),
@@ -33,7 +27,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
       routerConfig: router,
-      
     );
   }
 }

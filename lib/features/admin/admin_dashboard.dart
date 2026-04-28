@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/bottom_nav.dart';
+import '../../core/widgets/bottom_nav.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
