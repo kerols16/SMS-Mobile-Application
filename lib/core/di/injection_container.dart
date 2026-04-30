@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:school_test/features/admin/data/admin_service.dart';
+import 'package:school_test/features/admin/view/cubit/admin_cubit.dart';
 import '../network/dio_client.dart';
 import '../../features/auth/data/auth_service.dart';
 
@@ -11,4 +13,8 @@ Future<void> setupDependencies() async {
 
   // Auth
   sl.registerLazySingleton<AuthService>(() => AuthService(sl<Dio>()));
+
+  // Admin
+  sl.registerLazySingleton<AdminService>(() => AdminService(sl<Dio>()));
+  sl.registerFactory<AdminCubit>(() => AdminCubit(sl<AdminService>()));
 }

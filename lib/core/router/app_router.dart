@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:school_test/core/constants/routes_contents.dart';
 import 'package:school_test/core/di/injection_container.dart';
 import 'package:school_test/core/storage/local_srotage.dart';
-import 'package:school_test/features/admin/admin_dashboard.dart';
+import 'package:school_test/features/admin/data/admin_service.dart';
+import 'package:school_test/features/admin/view/admin_dashboard.dart';
+import 'package:school_test/features/admin/view/cubit/admin_cubit.dart';
 import 'package:school_test/features/auth/data/auth_service.dart';
 import 'package:school_test/features/auth/view/cubit/auth_cubit.dart';
 import 'package:school_test/features/auth/view/login_screen.dart';
@@ -20,8 +22,10 @@ final GoRouter router = GoRouter(
     final isOnLogin = state.matchedLocation == Routes.login;
 
     if (!isLoggedIn && !isOnLogin) return Routes.login;
+
     if (isLoggedIn && isOnLogin) {
       final role = await LocalStorage.getRole();
+      if (role == 'admin' || role == 'super_admin') return Routes.admin;
       return '/$role';
     }
     return null;
@@ -30,26 +34,22 @@ final GoRouter router = GoRouter(
   routes: [
     GoRoute(
       path: Routes.login,
-      builder: (context, state) => BlocProvider(
+      builder: (_, __) => BlocProvider(
         create: (_) => AuthCubit(sl<AuthService>()),
         child: const LoginScreen(),
       ),
     ),
     GoRoute(
       path: Routes.admin,
-      builder: (context, state) => const AdminDashboard(),
+      builder: (_, __) => BlocProvider(
+        create: (_) =>
+            AdminCubit(sl<AdminService>()),
+        child: const AdminDashboard(),
+      ),
     ),
-    GoRoute(
-      path: Routes.teacher,
-      builder: (context, state) => const TeacherDashboard(),
-    ),
-    GoRoute(
-      path: Routes.student,
-      builder: (context, state) => const StudentDashboard(),
-    ),
-    GoRoute(
-      path: Routes.parent,
-      builder: (context, state) => const ParentDashboard(),
-    ),
+    GoRoute(path: Routes.teacher, builder: (_, _) => const TeacherDashboard()),
+    GoRoute(path: Routes.student, builder: (_, _) => const StudentDashboard()),
+    GoRoute(path: Routes.parent, builder: (_, _) => const ParentDashboard()),
+    GoRoute(path: '/super_admin', redirect: (_, _) => Routes.admin),
   ],
 );

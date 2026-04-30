@@ -2,7 +2,6 @@ import 'package:school_test/core/constants/api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
-  
   // ── Token ──
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -46,5 +45,15 @@ class LocalStorage {
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null;
+  }
+
+  static Future<void> saveOriginalRole(String role) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.originalRole, role);
+  }
+
+  static Future<String?> getOriginalRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(StorageKeys.originalRole);
   }
 }

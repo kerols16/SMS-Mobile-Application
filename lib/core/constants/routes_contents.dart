@@ -1,7 +1,8 @@
 class Routes {
-  static String login = "/" ;
-  static String admin = "/admin" ;
-  static String student = "/teacher" ;
-  static String parent = "/parent" ;
-  static String teacher = "/student" ;
+  static String login = "/";
+  static String admin = "/admin";
+  static String superAdmin = "/super_admin";
+  static String student = "/student";
+  static String teacher = "/teacher";
+  static String parent = "/parent";
 }

@@ -42,6 +42,8 @@ class StorageKeys {
   static const String userData   = 'user_data';
   static const String isLoggedIn = 'is_logged_in';
   static const String userRole   = 'user_role';  
+  static const String originalRole = 'original_role'; 
+
 }
 
 class StatusCodes {
