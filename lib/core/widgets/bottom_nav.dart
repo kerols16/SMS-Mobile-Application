@@ -25,16 +25,27 @@ class BottomNav extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
+ @override
+Widget build(BuildContext context) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border(
+        top: BorderSide(color: Colors.grey.shade200, width: 1),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: SafeArea(
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 8,
+          offset: const Offset(0, -2),
+        ),
+      ],
+    ),
+    child: SafeArea(
+      top: false,
+      bottom: false, 
+      child: SizedBox(
+        height: 60, 
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: items.map((item) {
@@ -42,45 +53,46 @@ class BottomNav extends StatelessWidget {
             return Expanded(
               child: GestureDetector(
                 onTap: () => onTabChange(item.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? const Color(0xFF2563EB)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          item.icon,
-                          size: 20,
-                          color: isActive
-                              ? Colors.white
-                              : Colors.grey.shade400,
-                        ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, 
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8), 
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? const Color(0xFF2563EB)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isActive
-                              ? const Color(0xFF2563EB)
-                              : Colors.grey.shade500,
-                        ),
+                      child: Icon(
+                        item.icon,
+                        size: 22,
+                        color: isActive
+                            ? Colors.white
+                            : Colors.grey.shade400,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 3), 
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: isActive
+                            ? const Color(0xFF2563EB)
+                            : Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
           }).toList(),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

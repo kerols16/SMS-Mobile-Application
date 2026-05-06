@@ -31,25 +31,30 @@ class AdminService {
     required String password,
     required String role,
   }) async {
-    await _dio.post(ApiConstants.users, data: {
-      'name':     name,
-      'email':    email,
-      'password': password,
-      'role':     role,
-    });
+    await _dio.post(
+      ApiConstants.users,
+      data: {'name': name, 'email': email, 'password': password, 'role': role},
+    );
   }
 
-  Future<void> updateUser(int id, {String? name, String? email, String? role}) async {
+  Future<void> updateUser(
+    int id, {
+    String? name,
+    String? email,
+    String? role,
+  }) async {
     final Map<String, dynamic> data = {};
-    if (name  != null) data['name']  = name;
+    if (name != null) data['name'] = name;
     if (email != null) data['email'] = email;
-    if (role  != null) data['role']  = role;
+    if (role != null) data['role'] = role;
     await _dio.put(ApiConstants.userById(id), data: data);
   }
 
   Future<void> deleteUser(int id) async {
     await _dio.delete(ApiConstants.userById(id));
   }
+
+
 
   // ═══════════════════════════════════════
   // STUDENTS
@@ -76,17 +81,20 @@ class AdminService {
     required String phone,
     required String enrollmentDate,
   }) async {
-    await _dio.post(ApiConstants.students, data: {
-      'name':            name,
-      'email':           email,
-      'password':        password,
-      'student_id':      studentId,
-      'date_of_birth':   dateOfBirth,
-      'gender':          gender,
-      'address':         address,
-      'phone':           phone,
-      'enrollment_date': enrollmentDate,
-    });
+    await _dio.post(
+      ApiConstants.students,
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'student_id': studentId,
+        'date_of_birth': dateOfBirth,
+        'gender': gender,
+        'address': address,
+        'phone': phone,
+        'enrollment_date': enrollmentDate,
+      },
+    );
   }
 
   Future<void> updateStudent(int id, Map<String, dynamic> data) async {
@@ -124,19 +132,22 @@ class AdminService {
     required String qualification,
     required String subjectSpecialization,
   }) async {
-    await _dio.post(ApiConstants.teachers, data: {
-      'name':                   name,
-      'email':                  email,
-      'password':               password,
-      'teacher_id':             teacherId,
-      'date_of_birth':          dateOfBirth,
-      'gender':                 gender,
-      'address':                address,
-      'phone':                  phone,
-      'hire_date':              hireDate,
-      'qualification':          qualification,
-      'subject_specialization': subjectSpecialization,
-    });
+    await _dio.post(
+      ApiConstants.teachers,
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'teacher_id': teacherId,
+        'date_of_birth': dateOfBirth,
+        'gender': gender,
+        'address': address,
+        'phone': phone,
+        'hire_date': hireDate,
+        'qualification': qualification,
+        'subject_specialization': subjectSpecialization,
+      },
+    );
   }
 
   Future<void> updateTeacher(int id, Map<String, dynamic> data) async {
@@ -170,15 +181,18 @@ class AdminService {
     required String address,
     required String occupation,
   }) async {
-    await _dio.post(ApiConstants.parents, data: {
-      'name':       name,
-      'email':      email,
-      'password':   password,
-      'parent_id':  parentId,
-      'phone':      phone,
-      'address':    address,
-      'occupation': occupation,
-    });
+    await _dio.post(
+      ApiConstants.parents,
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'parent_id': parentId,
+        'phone': phone,
+        'address': address,
+        'occupation': occupation,
+      },
+    );
   }
 
   Future<void> updateParent(int id, Map<String, dynamic> data) async {
@@ -198,20 +212,20 @@ class AdminService {
     return data.map((e) => AdminNotificationModel.fromJson(e)).toList();
   }
 
- Future<int> getUnreadCount() async {
-  final response = await _dio.get(ApiConstants.notificationsUnreadCount);
+  Future<int> getUnreadCount() async {
+    final response = await _dio.get(ApiConstants.notificationsUnreadCount);
 
-  debugPrint("📦 FULL RESPONSE: ${response.data}");
+    debugPrint("📦 FULL RESPONSE: ${response.data}");
 
-  final data = response.data;
-  if (data == null) return 0;
+    final data = response.data;
+    if (data == null) return 0;
 
-  final innerData = data['data'];
-  if (innerData == null) return 0;
+    final innerData = data['data'];
+    if (innerData == null) return 0;
 
-  // API returns 'count' not 'unread_count'
-  return innerData['count'] ?? innerData['unread_count'] ?? 0;
-}
+    // API returns 'count' not 'unread_count'
+    return innerData['count'] ?? innerData['unread_count'] ?? 0;
+  }
 
   Future<void> markAllRead() async {
     await _dio.post(ApiConstants.notificationsMarkAllRead);

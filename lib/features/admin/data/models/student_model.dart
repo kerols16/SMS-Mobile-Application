@@ -1,5 +1,6 @@
 class AdminStudentModel {
   final int id;
+  final int userId;
   final String studentId;
   final String gender;
   final String address;
@@ -12,6 +13,7 @@ class AdminStudentModel {
 
   AdminStudentModel({
     required this.id,
+    required this.userId,
     required this.studentId,
     required this.gender,
     required this.address,
@@ -24,7 +26,10 @@ class AdminStudentModel {
 
  factory AdminStudentModel.fromJson(Map<String, dynamic> json) {
   return AdminStudentModel(
+   
     id: json['id'] ?? 0,
+    userId: json['user_id'],
+
     studentId: json['student_id'] ?? '',
     gender: json['gender'] ?? '',
     address: json['address'] ?? '',

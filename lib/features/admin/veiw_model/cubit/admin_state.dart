@@ -75,3 +75,30 @@ class AdminOperationError extends AdminState {
   @override
   List<Object?> get props => [message];
 }
+// User Details States
+class AdminUserDetailsLoading extends AdminState {}
+
+class AdminUserDetailsLoaded extends AdminState {
+  final AdminUserModel         user;
+  final AdminStudentModel?     student;
+  final AdminTeacherModel?     teacher;
+  final AdminParentModel?      parent;
+
+  AdminUserDetailsLoaded({
+    required this.user,
+    this.student,
+    this.teacher,
+    this.parent,
+  });
+
+  @override
+  List<Object?> get props => [user, student, teacher, parent];
+}
+
+class AdminUserDetailsError extends AdminState {
+  final String message;
+  AdminUserDetailsError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

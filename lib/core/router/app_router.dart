@@ -4,8 +4,8 @@ import 'package:school_test/core/constants/routes_contents.dart';
 import 'package:school_test/core/di/injection_container.dart';
 import 'package:school_test/core/storage/local_srotage.dart';
 import 'package:school_test/features/admin/data/admin_service.dart';
-import 'package:school_test/features/admin/view/admin_dashboard.dart';
-import 'package:school_test/features/admin/view/cubit/admin_cubit.dart';
+import 'package:school_test/features/admin/view/pages/admin_dashboard.dart';
+import 'package:school_test/features/admin/veiw_model/cubit/admin_cubit.dart';
 import 'package:school_test/features/auth/data/auth_service.dart';
 import 'package:school_test/features/auth/view/cubit/auth_cubit.dart';
 import 'package:school_test/features/auth/view/login_screen.dart';
@@ -41,9 +41,13 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: Routes.admin,
-      builder: (_, __) => BlocProvider(
-        create: (_) =>
-            AdminCubit(sl<AdminService>()),
+      builder: (_, __) => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => AdminCubit(sl<AdminService>())..loadDashboard(),
+          ),
+          BlocProvider(create: (_) => AuthCubit(sl<AuthService>())),
+        ],
         child: const AdminDashboard(),
       ),
     ),

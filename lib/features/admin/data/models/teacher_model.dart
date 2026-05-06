@@ -1,5 +1,6 @@
 class AdminTeacherModel {
   final int id;
+  final int userId ;
   final String teacherId;
   final String gender;
   final String address;
@@ -14,6 +15,7 @@ class AdminTeacherModel {
     required this.id,
     required this.teacherId,
     required this.gender,
+    required this.userId,
     required this.address,
     required this.phone,
     required this.hireDate,
@@ -25,6 +27,7 @@ class AdminTeacherModel {
 
   factory AdminTeacherModel.fromJson(Map<String, dynamic> json) {
     return AdminTeacherModel(
+      userId: json['user_id'],
       id:                    json['id'] ?? 0,
       teacherId:             json['teacher_id'] ?? '',
       gender:                json['gender'] ?? '',

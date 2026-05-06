@@ -1,5 +1,6 @@
 class AdminParentModel {
   final int id;
+  final int userId;
   final String parentId;
   final String phone;
   final String address;
@@ -9,6 +10,7 @@ class AdminParentModel {
 
   AdminParentModel({
     required this.id,
+    required this.userId,
     required this.parentId,
     required this.phone,
     required this.address,
@@ -19,13 +21,14 @@ class AdminParentModel {
 
   factory AdminParentModel.fromJson(Map<String, dynamic> json) {
     return AdminParentModel(
-      id:         json['id'] ?? 0,
-      parentId:   json['parent_id'] ?? '',
-      phone:      json['phone'] ?? '',
-      address:    json['address'] ?? '',
+      userId: json['user_id'],
+      id: json['id'] ?? 0,
+      parentId: json['parent_id'] ?? '',
+      phone: json['phone'] ?? '',
+      address: json['address'] ?? '',
       occupation: json['occupation'] ?? '',
 
-      name:  json['user']?['name'] ?? 'Unknown',
+      name: json['user']?['name'] ?? 'Unknown',
       email: json['user']?['email'] ?? 'No Email',
     );
   }

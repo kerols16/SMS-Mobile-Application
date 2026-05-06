@@ -91,7 +91,6 @@ class AdminCubit extends Cubit<AdminState> {
     try {
       await _service.updateUser(id, name: name, email: email, role: role);
       emit(AdminOperationSuccess('User updated successfully'));
-      await loadDashboard();
     } on DioException catch (e) {
       emit(AdminOperationError(_handleDioError(e)));
     } catch (e) {
@@ -153,7 +152,6 @@ class AdminCubit extends Cubit<AdminState> {
     try {
       await _service.updateStudent(id, data);
       emit(AdminOperationSuccess('Student updated successfully'));
-      await loadDashboard();
     } on DioException catch (e) {
       emit(AdminOperationError(_handleDioError(e)));
     } catch (e) {
@@ -219,7 +217,6 @@ class AdminCubit extends Cubit<AdminState> {
     try {
       await _service.updateTeacher(id, data);
       emit(AdminOperationSuccess('Teacher updated successfully'));
-      await loadDashboard();
     } on DioException catch (e) {
       emit(AdminOperationError(_handleDioError(e)));
     } catch (e) {
@@ -277,7 +274,6 @@ class AdminCubit extends Cubit<AdminState> {
     try {
       await _service.updateParent(id, data);
       emit(AdminOperationSuccess('Parent updated successfully'));
-      await loadDashboard();
     } on DioException catch (e) {
       emit(AdminOperationError(_handleDioError(e)));
     } catch (e) {
@@ -415,4 +411,46 @@ class AdminCubit extends Cubit<AdminState> {
 
     return e.message ?? 'Something went wrong';
   }
+
+  Future<void> loadUserDetails(int userId, String role) async {
+  emit(AdminUserDetailsLoading());
+  try {
+    final user = await _service.getUserById(userId);
+
+    AdminStudentModel? student;
+    AdminTeacherModel? teacher;
+    AdminParentModel?  parent;
+
+    if (role == 'student') {
+      final students = await _service.getStudents();
+      student = students.firstWhere(
+        (s) => s.userId == userId,
+        orElse: () => throw Exception('Student not found'),
+      );
+    } else if (role == 'teacher') {
+      final teachers = await _service.getTeachers();
+      teacher = teachers.firstWhere(
+        (t) => t.userId == userId,
+        orElse: () => throw Exception('Teacher not found'),
+      );
+    } else if (role == 'parent') {
+      final parents = await _service.getParents();
+      parent = parents.firstWhere(
+        (p) => p.userId == userId,
+        orElse: () => throw Exception('Parent not found'),
+      );
+    }
+
+    emit(AdminUserDetailsLoaded(
+      user:    user,
+      student: student,
+      teacher: teacher,
+      parent:  parent,
+    ));
+  } on DioException catch (e) {
+    emit(AdminUserDetailsError(_handleDioError(e)));
+  } catch (e) {
+    emit(AdminUserDetailsError('Failed to load user details'));
+  }
+}
 }
