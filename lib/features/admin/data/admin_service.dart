@@ -5,6 +5,9 @@ import 'package:school_test/features/admin/data/models/parent_model.dart';
 import 'package:school_test/features/admin/data/models/student_model.dart';
 import 'package:school_test/features/admin/data/models/teacher_model.dart';
 import 'package:school_test/features/admin/data/models/user_model.dart';
+import 'package:school_test/features/admin/data/models/classroom_model.dart';
+import 'package:school_test/features/admin/data/models/subject_model.dart';
+import 'package:school_test/features/admin/data/models/schedule_model.dart';
 import '../../../../core/constants/api_constants.dart';
 
 class AdminService {
@@ -53,8 +56,6 @@ class AdminService {
   Future<void> deleteUser(int id) async {
     await _dio.delete(ApiConstants.userById(id));
   }
-
-
 
   // ═══════════════════════════════════════
   // STUDENTS
@@ -214,16 +215,11 @@ class AdminService {
 
   Future<int> getUnreadCount() async {
     final response = await _dio.get(ApiConstants.notificationsUnreadCount);
-
     debugPrint("📦 FULL RESPONSE: ${response.data}");
-
     final data = response.data;
     if (data == null) return 0;
-
     final innerData = data['data'];
     if (innerData == null) return 0;
-
-    // API returns 'count' not 'unread_count'
     return innerData['count'] ?? innerData['unread_count'] ?? 0;
   }
 
@@ -237,5 +233,138 @@ class AdminService {
 
   Future<void> deleteNotification(int id) async {
     await _dio.delete(ApiConstants.notificationById(id));
+  }
+
+  // ═══════════════════════════════════════
+  // CLASSROOMS
+  // ═══════════════════════════════════════
+  Future<List<ClassroomModel>> getClassrooms() async {
+    final response = await _dio.get(ApiConstants.classrooms);
+    final List data = response.data['data']['data'];
+    return data.map((e) => ClassroomModel.fromJson(e)).toList();
+  }
+
+  Future<ClassroomModel> getClassroomById(int id) async {
+    final response = await _dio.get(ApiConstants.classroomById(id));
+    return ClassroomModel.fromJson(response.data['data']);
+  }
+
+  Future<void> createClassroom(Map<String, dynamic> data) async {
+    await _dio.post(ApiConstants.classrooms, data: data);
+  }
+
+  Future<void> updateClassroom(int id, Map<String, dynamic> data) async {
+    await _dio.put(ApiConstants.classroomById(id), data: data);
+  }
+
+  Future<void> deleteClassroom(int id) async {
+    await _dio.delete(ApiConstants.classroomById(id));
+  }
+
+  // ═══════════════════════════════════════
+  // CLASSROOM RELATIONSHIPS
+  // ═══════════════════════════════════════
+  Future<void> enrollStudent(int classroomId, int studentId) async {
+    await _dio.post(
+      ApiConstants.enrollStudent,
+      data: {'classroom_id': classroomId, 'student_id': studentId, 'status': 'active','enrolled_at': DateTime.now().toIso8601String().split('T')[0]},
+    );
+  }
+
+  Future<void> removeStudent(int classroomId, int studentId) async {
+    await _dio.delete(
+      ApiConstants.removeStudent,
+      data: {'classroom_id': classroomId, 'student_id': studentId},
+    );
+  }
+
+  Future<void> assignTeacher(int classroomId, int teacherId) async {
+    await _dio.post(
+      ApiConstants.assignTeacher,
+      data: {'classroom_id': classroomId, 'teacher_id': teacherId, 'role': 'main_teacher'},
+    );
+  }
+
+  Future<void> removeTeacher(int classroomId, int teacherId) async {
+    await _dio.delete(
+      ApiConstants.removeTeacher,
+      data: {'classroom_id': classroomId, 'teacher_id': teacherId},
+    );
+  }
+
+  Future<void> assignSubject(int classroomId, int subjectId, int teacherId) async {
+    await _dio.post(
+      ApiConstants.assignSubject,
+      data: {
+        'classroom_id': classroomId,
+        'subject_id': subjectId,
+        'teacher_id': teacherId,
+        'weekly_hours': 5,
+      },
+    );
+  }
+
+  Future<void> removeSubject(int classroomId, int subjectId) async {
+    await _dio.delete(
+      ApiConstants.removeSubject,
+      data: {'classroom_id': classroomId, 'subject_id': subjectId},
+    );
+  }
+
+  Future<Map<String, dynamic>> getClassroomRelationships(int classroomId) async {
+    final response = await _dio.get(ApiConstants.classroomRelationships(classroomId));
+    return response.data['data'];
+  }
+
+  // ═══════════════════════════════════════
+  // SUBJECTS
+  // ═══════════════════════════════════════
+  Future<List<SubjectModel>> getSubjects() async {
+    final response = await _dio.get(ApiConstants.subjects);
+    final List data = response.data['data']['data'];
+    return data.map((e) => SubjectModel.fromJson(e)).toList();
+  }
+
+  Future<SubjectModel> getSubjectById(int id) async {
+    final response = await _dio.get(ApiConstants.subjectById(id));
+    return SubjectModel.fromJson(response.data['data']);
+  }
+
+  Future<void> createSubject(Map<String, dynamic> data) async {
+    await _dio.post(ApiConstants.subjects, data: data);
+  }
+
+  Future<void> updateSubject(int id, Map<String, dynamic> data) async {
+    await _dio.put(ApiConstants.subjectById(id), data: data);
+  }
+
+  Future<void> deleteSubject(int id) async {
+    await _dio.delete(ApiConstants.subjectById(id));
+  }
+
+  // ═══════════════════════════════════════
+  // SCHEDULES
+  // ═══════════════════════════════════════
+  Future<List<ScheduleModel>> getSchedules() async {
+    final response = await _dio.get(ApiConstants.schedules);
+    final List data = response.data['data']['data'];
+    return data.map((e) => ScheduleModel.fromJson(e)).toList();
+  }
+
+  Future<ScheduleModel> getScheduleById(int id) async {
+    final response = await _dio.get(ApiConstants.scheduleById(id));
+    return ScheduleModel.fromJson(response.data['data']);
+  }
+
+  Future<void> createSchedule(Map<String, dynamic> data) async {
+    await _dio.post(ApiConstants.schedules, data: data);
+  }
+
+  Future<void> updateSchedule(int id, Map<String, dynamic> data) async {
+    await _dio.put(ApiConstants.scheduleById(id), data: data);
+  }
+
+  Future<void> deleteSchedule(int id) async {
+    await _dio.delete(ApiConstants.scheduleById(id));
   }
 }

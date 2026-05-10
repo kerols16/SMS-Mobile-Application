@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:school_test/features/admin/data/models/user_model.dart';
 import 'package:school_test/features/admin/data/models/student_model.dart';
 import 'package:school_test/features/admin/data/models/teacher_model.dart';
 import 'package:school_test/features/admin/data/models/parent_model.dart';

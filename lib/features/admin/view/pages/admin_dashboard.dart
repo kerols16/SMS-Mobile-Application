@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:school_test/core/constants/routes_contents.dart';
 import 'package:school_test/core/storage/local_srotage.dart';
+import 'package:school_test/features/admin/view/tabs/academics_tab.dart';
+import 'package:school_test/features/admin/view/tabs/notifications_tab.dart';
 import '../../../../core/widgets/bottom_nav.dart';
 import '../../veiw_model/cubit/admin_cubit.dart';
 import '../tabs/dashboard_tab.dart';
@@ -36,6 +38,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   final List<NavItem> _navItems = [
     NavItem(id: 'dashboard', label: 'Dashboard', icon: Icons.home),
+    NavItem(id: 'academics', label: 'Academics', icon: Icons.school),
+    NavItem(id: 'notifications', label: 'Notifs', icon: Icons.notifications),
     NavItem(id: 'users', label: 'Users', icon: Icons.manage_accounts),
     NavItem(id: 'profile', label: 'Profile', icon: Icons.person),
   ];
@@ -101,6 +105,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     else if (state is AdminLoaded) ...[
                       if (_activeTab == 'dashboard')
                         DashboardTab(state: state, isSuperAdmin: _isSuperAdmin),
+                      if (_activeTab == 'academics')
+                        AcademicsTab(state: state, isSuperAdmin: _isSuperAdmin),
+                      if (_activeTab == 'notifications')
+                        NotificationsTab(
+                          state: state,
+                          isSuperAdmin: _isSuperAdmin,
+                        ),
                       if (_activeTab == 'users')
                         UsersTab(state: state, isSuperAdmin: _isSuperAdmin),
                       if (_activeTab == 'profile')
@@ -169,7 +180,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ],
             ),
             GestureDetector(
-              onTap: () => setState(() => _activeTab = 'users'),
+              onTap: () => setState(() => _activeTab = 'notifications'),
               child: Stack(
                 children: [
                   Container(

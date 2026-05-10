@@ -23,6 +23,9 @@ class AdminLoaded extends AdminState {
   final List<AdminTeacherModel>      teachers;
   final List<AdminParentModel>       parents;
   final List<AdminNotificationModel> notifications;
+  final List<ClassroomModel>         classrooms;
+  final List<SubjectModel>           subjects;
+  final List<ScheduleModel>          schedules;
   final int                          unreadCount;
 
   AdminLoaded({
@@ -32,12 +35,24 @@ class AdminLoaded extends AdminState {
     required this.parents,
     required this.notifications,
     required this.unreadCount,
+    required this.classrooms,
+    required this.subjects,
+    required this.schedules,
   });
 
   @override
-  List<Object?> get props => [users, students, teachers, parents, notifications, unreadCount];
+  List<Object?> get props => [
+        users,
+        students,
+        teachers,
+        parents,
+        notifications,
+        unreadCount,
+        classrooms,
+        subjects,
+        schedules,
+      ];
 
-  // used for partial updates without reloading everything
   AdminLoaded copyWith({
     List<AdminUserModel>?         users,
     List<AdminStudentModel>?      students,
@@ -45,6 +60,9 @@ class AdminLoaded extends AdminState {
     List<AdminParentModel>?       parents,
     List<AdminNotificationModel>? notifications,
     int?                          unreadCount,
+    List<ClassroomModel>?         classrooms,
+    List<SubjectModel>?           subjects,
+    List<ScheduleModel>?          schedules,
   }) {
     return AdminLoaded(
       users:         users         ?? this.users,
@@ -53,6 +71,9 @@ class AdminLoaded extends AdminState {
       parents:       parents       ?? this.parents,
       notifications: notifications ?? this.notifications,
       unreadCount:   unreadCount   ?? this.unreadCount,
+      classrooms:    classrooms    ?? this.classrooms,
+      subjects:      subjects      ?? this.subjects,
+      schedules:     schedules     ?? this.schedules,
     );
   }
 }
@@ -75,6 +96,7 @@ class AdminOperationError extends AdminState {
   @override
   List<Object?> get props => [message];
 }
+
 // User Details States
 class AdminUserDetailsLoading extends AdminState {}
 
@@ -101,4 +123,18 @@ class AdminUserDetailsError extends AdminState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class ClassroomLoaded extends AdminState {
+  final ClassroomModel classroom;
+  ClassroomLoaded(this.classroom);
+}
+class SubjectLoaded extends AdminState {
+  final SubjectModel subject;
+  SubjectLoaded(this.subject);
+}
+
+class ScheduleLoaded extends AdminState {
+  final ScheduleModel schedule;
+  ScheduleLoaded(this.schedule);
 }

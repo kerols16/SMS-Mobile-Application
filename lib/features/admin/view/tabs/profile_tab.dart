@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:school_test/features/auth/view/cubit/auth_cubit.dart';
 import '../utils/admin_helper.dart';
 
 class ProfileTab extends StatelessWidget {

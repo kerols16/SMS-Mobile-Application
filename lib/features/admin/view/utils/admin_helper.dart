@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class AdminHelper {
   static const sectionTitle = TextStyle(
-    fontSize: 16, 
-    fontWeight: FontWeight.w600, 
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
     color: Color(0xFF374151),
   );
 
   static const pageTitle = TextStyle(
-    fontSize: 20, 
-    fontWeight: FontWeight.w600, 
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
     color: Color(0xFF374151),
   );
 
@@ -29,21 +29,33 @@ class AdminHelper {
 
   static Color roleColor(String role) {
     switch (role) {
-      case 'super_admin': return Colors.red;
-      case 'admin':       return Colors.purple;
-      case 'teacher':     return Colors.teal;
-      case 'student':     return Colors.blue;
-      case 'parent':      return Colors.orange;
-      default:            return Colors.grey;
+      case 'super_admin':
+        return Colors.red;
+      case 'admin':
+        return Colors.purple;
+      case 'teacher':
+        return Colors.teal;
+      case 'student':
+        return Colors.blue;
+      case 'parent':
+        return Colors.orange;
+      case 'classroom':
+        return Colors.teal;
+      case 'subject':
+        return Colors.purple;
+      case 'schedule':
+        return Colors.orange;
+      default:
+        return Colors.grey;
     }
   }
 
   static Widget buildTextField(
-    String label, 
+    String label,
     TextEditingController ctrl, {
-    bool isRequired = false, 
-    TextInputType type = TextInputType.text, 
-    bool obscure = false, 
+    bool isRequired = false,
+    TextInputType type = TextInputType.text,
+    bool obscure = false,
     String? hint,
   }) {
     return TextFormField(
@@ -52,14 +64,20 @@ class AdminHelper {
       obscureText: obscure,
       decoration: inputDecoration(label, isRequired: isRequired, hint: hint),
       validator: (v) {
-        if (isRequired && (v == null || v.trim().isEmpty)) return 'Field is required';
-        if (isRequired && obscure && v!.length < 8) return 'Password must be at least 8 characters';
+        if (isRequired && (v == null || v.trim().isEmpty))
+          return 'Field is required';
+        if (isRequired && obscure && v!.length < 8)
+          return 'Password must be at least 8 characters';
         return null;
       },
     );
   }
 
-  static InputDecoration inputDecoration(String label, {bool isRequired = false, String? hint}) {
+  static InputDecoration inputDecoration(
+    String label, {
+    bool isRequired = false,
+    String? hint,
+  }) {
     return InputDecoration(
       label: Row(
         mainAxisSize: MainAxisSize.min,
@@ -91,7 +109,9 @@ class AdminHelper {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2563EB),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: Text(label),
       ),
@@ -112,7 +132,14 @@ class AdminHelper {
         children: [
           Icon(icon, color: color, size: 32),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Color(0xFF374151))),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF374151),
+            ),
+          ),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
@@ -139,7 +166,11 @@ class AdminHelper {
           children: [
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 8),
-            Text(label, style: TextStyle(fontSize: 12, color: color), textAlign: TextAlign.center),
+            Text(
+              label,
+              style: TextStyle(fontSize: 12, color: color),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -157,12 +188,26 @@ class AdminHelper {
           onTap: () {},
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(children: [
-              Icon(icon, color: Colors.grey.shade600, size: 20),
-              const SizedBox(width: 12),
-              Expanded(child: Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF374151)))),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
-            ]),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.grey.shade600, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF374151),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey.shade400,
+                  size: 20,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -179,14 +224,19 @@ class AdminHelper {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Delete $type'),
-        content: Text('Are you sure you want to delete this $type? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete this $type? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () { Navigator.pop(ctx); onConfirm(); },
+            onPressed: () {
+              Navigator.pop(ctx);
+              onConfirm();
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -200,12 +250,18 @@ class AdminHelper {
 
   static IconData roleIcon(String role) {
     switch (role) {
-      case 'super_admin': return Icons.admin_panel_settings;
-      case 'admin':       return Icons.shield;
-      case 'teacher':     return Icons.menu_book;
-      case 'student':     return Icons.school;
-      case 'parent':      return Icons.people;
-      default:            return Icons.person;
+      case 'super_admin':
+        return Icons.admin_panel_settings;
+      case 'admin':
+        return Icons.shield;
+      case 'teacher':
+        return Icons.menu_book;
+      case 'student':
+        return Icons.school;
+      case 'parent':
+        return Icons.people;
+      default:
+        return Icons.person;
     }
   }
 }
