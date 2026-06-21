@@ -208,7 +208,7 @@ class _ClassroomDetailsPageState extends State<ClassroomDetailsPage> {
             _infoRow('Description', c.description!),
         ]),
         const SizedBox(height: 20),
-        // Students section - استخدام _getStudentName
+        // Students section
         _buildManageableSection(
           title: 'Students (${c.students.length})',
           items: c.students.cast<Map<String, dynamic>>(),
@@ -218,23 +218,16 @@ class _ClassroomDetailsPageState extends State<ClassroomDetailsPage> {
           addButtonLabel: 'Enroll Student',
         ),
         const SizedBox(height: 20),
-        // Teachers section - استخدام _getTeacherName
-        _buildManageableSection(
-          title: 'Teachers (${c.teachers.length})',
-          items: c.teachers.cast<Map<String, dynamic>>(),
-          itemLabel: (t) => _getTeacherName(t),
-          onRemove: (t) => _cubit.removeTeacher(c.id, t['id'] as int),
-          onAdd: () => _showAssignTeacherDialog(c),
-          addButtonLabel: 'Assign Teacher',
-        ),
+        // Teachers section with role dropdown (FIXED)
+        _buildTeachersSection(c),
         const SizedBox(height: 20),
-        // Subjects section
-        _buildSubjectsSection(c),
+        // Subjects section with teacher dropdown and hours (FIXED)
+        _buildSubjectsSectionEnhanced(c),
       ],
     );
   }
 
-  // جزء قابل لإعادة الاستخدام لعرض قائمة مع إضافة/إزالة
+  // Generic manageable section (used for students)
   Widget _buildManageableSection({
     required String title,
     required List<Map<String, dynamic>> items,
@@ -277,32 +270,164 @@ class _ClassroomDetailsPageState extends State<ClassroomDetailsPage> {
     ]);
   }
 
-  // قسم المواد - استخدام _getSubjectName
-  Widget _buildSubjectsSection(ClassroomModel c) {
-    return _buildInfoCard('Subjects (${c.subjects.length})', [
-      if (c.subjects.isEmpty)
-        const Text(
-          'No subjects assigned',
-          style: TextStyle(color: Colors.grey),
-        ),
-      ...c.subjects.map(
-        (sub) => Row(
-          children: [
-            Expanded(
-              child: Text(
-                _getSubjectName(sub),
-                style: const TextStyle(color: Color(0xFF374151)),
+  // Modified teachers section with role dropdown (FIXED)
+  Widget _buildTeachersSection(ClassroomModel c) {
+    return _buildInfoCard('Teachers (${c.teachers.length})', [
+      if (c.teachers.isEmpty)
+        const Text('No teachers assigned', style: TextStyle(color: Colors.grey)),
+      ...c.teachers.map((teacher) {
+        final teacherId = teacher['id'] as int;
+        final currentRole = teacher['pivot']?['role'] ?? teacher['role'] ?? 'subject_teacher';
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _getTeacherName(teacher),
+                  style: const TextStyle(color: Color(0xFF374151)),
+                ),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-              onPressed: () => _cubit.removeSubject(c.id, sub['id'] as int),
-              tooltip: 'Remove',
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2, // gives dropdown more room relative to the name field
+                child: DropdownButtonFormField<String>(
+                  value: currentRole,
+                  isExpanded: true, // ✅ fills the available width
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'homeroom', child: Text('Homeroom')),
+                    DropdownMenuItem(value: 'subject_teacher', child: Text('Subject Teacher')),
+                    DropdownMenuItem(value: 'assistant', child: Text('Assistant')),
+                  ],
+                  onChanged: (newRole) {
+                    if (newRole != null && newRole != currentRole) {
+                      _cubit.changeTeacherRole(c.id, teacherId, newRole);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                onPressed: () => _cubit.removeTeacher(c.id, teacherId),
+                tooltip: 'Remove',
+              ),
+            ],
+          ),
+        );
+      }),
+      const Divider(height: 20),
+      Center(
+        child: ElevatedButton(
+          onPressed: () => _showAssignTeacherDialog(c),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2563EB),
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Assign Teacher'),
         ),
       ),
-      const Divider(height: 20),
+    ]);
+  }
+
+  // Enhanced subjects section with teacher dropdown and hours field (FIXED)
+  Widget _buildSubjectsSectionEnhanced(ClassroomModel c) {
+    // Build a map of teacher names by id for quick lookup
+    final teacherMap = {for (var t in widget.allData.teachers) t.id: t.name};
+
+    return _buildInfoCard('Subjects (${c.subjects.length})', [
+      if (c.subjects.isEmpty)
+        const Text('No subjects assigned', style: TextStyle(color: Colors.grey)),
+      ...c.subjects.map((subject) {
+        final subjectId = subject['id'] as int;
+        final pivot = subject['pivot'] as Map<String, dynamic>?;
+        final currentTeacherId = pivot?['teacher_id'] as int?;
+        final currentHours = pivot?['weekly_hours'] ?? 0;
+
+        // Find available teachers (all teachers from allData)
+        final availableTeachers = widget.allData.teachers;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Row 1: Subject name + Remove button
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _getSubjectName(subject),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                    onPressed: () => _cubit.removeSubject(c.id, subjectId),
+                    tooltip: 'Remove',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Row 2: Teacher dropdown + Hours field
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<int>(
+                      value: currentTeacherId,
+                      isExpanded: true, // ✅ prevents internal overflow
+                      decoration: const InputDecoration(
+                        labelText: 'Teacher',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                      items: availableTeachers.map((teacher) {
+                        return DropdownMenuItem(
+                          value: teacher.id,
+                          child: Text(teacher.name),
+                        );
+                      }).toList(),
+                      onChanged: (newTeacherId) {
+                        if (newTeacherId != null && newTeacherId != currentTeacherId) {
+                          _cubit.changeSubjectTeacher(c.id, subjectId, newTeacherId);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 100,
+                    child: TextFormField(
+                      initialValue: currentHours.toString(),
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Hours',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                      onFieldSubmitted: (value) {
+                        final hours = int.tryParse(value);
+                        if (hours != null && hours != currentHours) {
+                          _cubit.updateSubjectHours(c.id, subjectId, hours);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+            ],
+          ),
+        );
+      }),
       Center(
         child: ElevatedButton(
           onPressed: () => _showAssignSubjectDialog(c),

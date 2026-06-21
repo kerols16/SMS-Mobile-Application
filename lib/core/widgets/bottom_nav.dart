@@ -43,9 +43,10 @@ Widget build(BuildContext context) {
     ),
     child: SafeArea(
       top: false,
-      bottom: false, 
+      bottom: true, 
+      minimum: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
-        height: 60, 
+    height: 80,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: items.map((item) {

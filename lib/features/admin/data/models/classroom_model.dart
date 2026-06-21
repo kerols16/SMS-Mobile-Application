@@ -1,3 +1,6 @@
+import 'package:school_test/features/admin/data/models/subject_model.dart';
+import 'package:school_test/features/admin/data/models/admin_teacher_model.dart';
+
 class ClassroomModel {
   final int id;
   final String name;
@@ -6,9 +9,9 @@ class ClassroomModel {
   final String academicYear;
   final String? description;
   final bool isActive;
-  final List<dynamic> students; // يمكنك لاحقاً استخدام StudentModel
-  final List<dynamic> teachers; // يمكنك لاحقاً استخدام TeacherModel
-  final List<dynamic> subjects; // يمكنك لاحقاً استخدام SubjectModel
+  final List<dynamic> students; 
+  final List<dynamic> teachers; 
+  final List<dynamic> subjects; 
 
   ClassroomModel({
     required this.id,

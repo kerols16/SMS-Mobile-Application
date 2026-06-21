@@ -45,6 +45,37 @@ class _ClassroomFormPageState extends State<ClassroomFormPage> {
     super.dispose();
   }
 
+  // Custom validator for capacity: must be integer between 1 and 100
+  String? _validateCapacity(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Capacity is required';
+    }
+    final int? cap = int.tryParse(value.trim());
+    if (cap == null) {
+      return 'Must be a valid number';
+    }
+    if (cap < 1) {
+      return 'Capacity must be at least 1';
+    }
+    if (cap > 100) {
+      return 'Capacity cannot exceed 100';
+    }
+    return null;
+  }
+
+  // Custom validator for grade level: must match "Grade X" pattern
+  String? _validateGradeLevel(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Grade level is required';
+    }
+    final trimmed = value.trim();
+    final regExp = RegExp(r'^Grade\s+\d+$', caseSensitive: false);
+    if (!regExp.hasMatch(trimmed)) {
+      return 'Must follow the format: Grade [number] (e.g., Grade 1, Grade 10)';
+    }
+    return null;
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -52,7 +83,7 @@ class _ClassroomFormPageState extends State<ClassroomFormPage> {
     final data = {
       'name': _nameCtrl.text.trim(),
       'grade_level': _gradeCtrl.text.trim(),
-      'capacity': int.tryParse(_capacityCtrl.text.trim()) ?? 0,
+      'capacity': int.parse(_capacityCtrl.text.trim()), // already validated
       'academic_year': _academicYearCtrl.text.trim(),
       'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       'is_active': _isActive,
@@ -109,13 +140,35 @@ class _ClassroomFormPageState extends State<ClassroomFormPage> {
                     children: [
                       AdminHelper.buildTextField('Classroom Name', _nameCtrl, isRequired: true),
                       const SizedBox(height: 16),
-                      AdminHelper.buildTextField('Grade Level (e.g. Grade 1)', _gradeCtrl, isRequired: true),
+
+                      // Grade Level field with format validation
+                      TextFormField(
+                        controller: _gradeCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Grade Level (e.g. Grade 1)',
+                          border: OutlineInputBorder(),
+                          hintText: 'Grade 1',
+                        ),
+                        validator: _validateGradeLevel,
+                      ),
                       const SizedBox(height: 16),
-                      AdminHelper.buildTextField('Capacity', _capacityCtrl, isRequired: true, type: TextInputType.number),
+
+                      // Capacity field with range validation (1-100)
+                      TextFormField(
+                        controller: _capacityCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Capacity (1-100)',
+                          border: OutlineInputBorder(),
+                          hintText: 'e.g., 30',
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: _validateCapacity,
+                      ),
                       const SizedBox(height: 16),
+
                       AdminHelper.buildTextField('Academic Year (e.g. 2024-2025)', _academicYearCtrl, isRequired: true),
                       const SizedBox(height: 16),
-                      AdminHelper.buildTextField('Description (optional)', _descCtrl,),
+                      AdminHelper.buildTextField('Description (optional)', _descCtrl),
                       const SizedBox(height: 16),
                       SwitchListTile(
                         title: const Text('Active'),
@@ -129,6 +182,7 @@ class _ClassroomFormPageState extends State<ClassroomFormPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AdminHelper.roleColor('classroom'),
                           minimumSize: const Size(double.infinity, 50),
+                          textStyle: const TextStyle(color: Colors.white),
                         ),
                         child: Text(widget.classroom == null ? 'Create' : 'Update'),
                       ),

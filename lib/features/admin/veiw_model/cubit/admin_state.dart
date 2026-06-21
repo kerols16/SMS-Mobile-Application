@@ -18,15 +18,18 @@ class AdminError extends AdminState {
 }
 
 class AdminLoaded extends AdminState {
-  final List<AdminUserModel>         users;
-  final List<AdminStudentModel>      students;
-  final List<AdminTeacherModel>      teachers;
-  final List<AdminParentModel>       parents;
+  final List<AdminUserModel> users;
+  final List<AdminStudentModel> students;
+  final List<AdminTeacherModel> teachers;
+  final List<AdminParentModel> parents;
   final List<AdminNotificationModel> notifications;
-  final List<ClassroomModel>         classrooms;
-  final List<SubjectModel>           subjects;
-  final List<ScheduleModel>          schedules;
-  final int                          unreadCount;
+  final List<ClassroomModel> classrooms;
+  final List<SubjectModel> subjects;
+  final List<ScheduleModel> schedules;
+  final int unreadCount;
+  final List<AttendanceModel> attendances;
+  final List<ExamModel> exams;
+  final List<GradeModel> grades;
 
   AdminLoaded({
     required this.users,
@@ -38,46 +41,41 @@ class AdminLoaded extends AdminState {
     required this.classrooms,
     required this.subjects,
     required this.schedules,
+    this.attendances = const [],
+    this.exams = const [],
+    this.grades = const [],
   });
 
-  @override
-  List<Object?> get props => [
-        users,
-        students,
-        teachers,
-        parents,
-        notifications,
-        unreadCount,
-        classrooms,
-        subjects,
-        schedules,
-      ];
-
   AdminLoaded copyWith({
-    List<AdminUserModel>?         users,
-    List<AdminStudentModel>?      students,
-    List<AdminTeacherModel>?      teachers,
-    List<AdminParentModel>?       parents,
+    List<AdminUserModel>? users,
+    List<AdminStudentModel>? students,
+    List<AdminTeacherModel>? teachers,
+    List<AdminParentModel>? parents,
     List<AdminNotificationModel>? notifications,
-    int?                          unreadCount,
-    List<ClassroomModel>?         classrooms,
-    List<SubjectModel>?           subjects,
-    List<ScheduleModel>?          schedules,
+    int? unreadCount,
+    List<ClassroomModel>? classrooms,
+    List<SubjectModel>? subjects,
+    List<ScheduleModel>? schedules,
+    List<AttendanceModel>? attendances,
+    List<ExamModel>? exams,
+    List<GradeModel>? grades,
   }) {
     return AdminLoaded(
-      users:         users         ?? this.users,
-      students:      students      ?? this.students,
-      teachers:      teachers      ?? this.teachers,
-      parents:       parents       ?? this.parents,
+      users: users ?? this.users,
+      students: students ?? this.students,
+      teachers: teachers ?? this.teachers,
+      parents: parents ?? this.parents,
       notifications: notifications ?? this.notifications,
-      unreadCount:   unreadCount   ?? this.unreadCount,
-      classrooms:    classrooms    ?? this.classrooms,
-      subjects:      subjects      ?? this.subjects,
-      schedules:     schedules     ?? this.schedules,
+      unreadCount: unreadCount ?? this.unreadCount,
+      classrooms: classrooms ?? this.classrooms,
+      subjects: subjects ?? this.subjects,
+      schedules: schedules ?? this.schedules,
+      attendances: attendances ?? this.attendances,
+      exams: exams ?? this.exams,
+      grades: grades ?? this.grades,
     );
   }
-}
-
+} 
 // operation states — for create / update / delete
 class AdminOperationLoading extends AdminState {}
 
@@ -137,4 +135,90 @@ class SubjectLoaded extends AdminState {
 class ScheduleLoaded extends AdminState {
   final ScheduleModel schedule;
   ScheduleLoaded(this.schedule);
+}
+
+// Attendances
+class AttendancesLoaded extends AdminState {
+  final List<AttendanceModel> attendances;
+  AttendancesLoaded(this.attendances);
+  @override List<Object?> get props => [attendances];
+}
+class AttendanceLoaded extends AdminState {
+  final AttendanceModel attendance;
+  AttendanceLoaded(this.attendance);
+  @override List<Object?> get props => [attendance];
+}
+
+// Exams
+class ExamsLoaded extends AdminState {
+  final List<ExamModel> exams;
+  ExamsLoaded(this.exams);
+  @override List<Object?> get props => [exams];
+}
+class ExamLoaded extends AdminState {
+  final ExamModel exam;
+  ExamLoaded(this.exam);
+  @override List<Object?> get props => [exam];
+}
+
+// Grades
+class GradesLoaded extends AdminState {
+  final List<GradeModel> grades;
+  GradesLoaded(this.grades);
+  @override List<Object?> get props => [grades];
+}
+class GradeLoaded extends AdminState {
+  final GradeModel grade;
+  GradeLoaded(this.grade);
+  @override List<Object?> get props => [grade];
+}
+
+// Assignments
+class AssignmentsLoaded extends AdminState {
+  final List<AssignmentModel> assignments;
+  AssignmentsLoaded(this.assignments);
+  @override List<Object?> get props => [assignments];
+}
+class AssignmentLoaded extends AdminState {
+  final AssignmentModel assignment;
+  AssignmentLoaded(this.assignment);
+  @override List<Object?> get props => [assignment];
+}
+
+// Submissions
+class SubmissionsLoaded extends AdminState {
+  final List<SubmissionModel> submissions;
+  SubmissionsLoaded(this.submissions);
+  @override List<Object?> get props => [submissions];
+}
+class SubmissionLoaded extends AdminState {
+  final SubmissionModel submission;
+  SubmissionLoaded(this.submission);
+  @override List<Object?> get props => [submission];
+}
+
+// Messages
+class MessagesLoaded extends AdminState {
+  final List<MessageModel> messages;
+  MessagesLoaded(this.messages);
+  @override List<Object?> get props => [messages];
+}
+
+// Resources
+class ResourcesLoaded extends AdminState {
+  final List<ResourceModel> resources;
+  ResourcesLoaded(this.resources);
+  @override List<Object?> get props => [resources];
+}
+
+// Teacher "me" endpoints
+class TeacherClassroomsLoaded extends AdminState {
+  final List<dynamic> classrooms;
+  TeacherClassroomsLoaded(this.classrooms);
+  @override List<Object?> get props => [classrooms];
+}
+class TeacherStudentsLoaded extends AdminState {
+  final List<dynamic> students;
+  TeacherStudentsLoaded(this.students);
+  @override List<Object?> get props => [students];
 }

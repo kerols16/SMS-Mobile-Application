@@ -44,6 +44,24 @@ class _SubjectFormPageState extends State<SubjectFormPage> {
     super.dispose();
   }
 
+  // Validator for credits: must be integer between 1 and 10
+  String? _validateCredits(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Credits are required';
+    }
+    final int? credits = int.tryParse(value.trim());
+    if (credits == null) {
+      return 'Must be a valid number';
+    }
+    if (credits < 1) {
+      return 'Credits must be at least 1';
+    }
+    if (credits > 10) {
+      return 'Credits cannot exceed 10';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AdminCubit, AdminState>(
@@ -106,11 +124,16 @@ class _SubjectFormPageState extends State<SubjectFormPage> {
                       const SizedBox(height: 16),
                       AdminHelper.buildTextField('Description', _descCtrl),
                       const SizedBox(height: 16),
-                      AdminHelper.buildTextField(
-                        'Credits',
-                        _creditsCtrl,
-                        isRequired: true,
-                        type: TextInputType.number,
+                      // Credits field with range validation (1-10)
+                      TextFormField(
+                        controller: _creditsCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Credits (1-10)',
+                          border: OutlineInputBorder(),
+                          hintText: 'e.g., 3',
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: _validateCredits,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
@@ -160,7 +183,7 @@ class _SubjectFormPageState extends State<SubjectFormPage> {
       'description': _descCtrl.text.trim().isEmpty
           ? null
           : _descCtrl.text.trim(),
-      'credits': int.tryParse(_creditsCtrl.text.trim()) ?? 0,
+      'credits': int.parse(_creditsCtrl.text.trim()), // already validated
       'type': _type,
       'is_active': _isActive,
     };

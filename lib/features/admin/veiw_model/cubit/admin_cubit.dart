@@ -3,13 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:school_test/features/admin/data/models/classroom_model.dart';
+import 'package:school_test/features/admin/data/models/exam_model.dart';
+import 'package:school_test/features/admin/data/models/grade_model.dart';
+import 'package:school_test/features/admin/data/models/message_model.dart';
+import 'package:school_test/features/admin/data/models/resource_model.dart';
 import 'package:school_test/features/admin/data/models/schedule_model.dart';
 import 'package:school_test/features/admin/data/models/subject_model.dart';
+import 'package:school_test/features/admin/data/models/submission_model.dart';
+import 'package:school_test/features/admin/data/models/assignment_model.dart';
+import 'package:school_test/features/admin/data/models/attendance_model.dart';
 import '../../data/admin_service.dart';
-import '../../data/models/user_model.dart';
-import '../../data/models/student_model.dart';
-import '../../data/models/teacher_model.dart';
-import '../../data/models/parent_model.dart';
+import '../../data/models/admin_user_model.dart';
+import '../../data/models/admin_student_model.dart';
+import '../../data/models/admin_teacher_model.dart';
+import '../../data/models/admin_parent_model.dart';
 import '../../data/models/notification_model.dart';
 
 part 'admin_state.dart';
@@ -26,32 +33,58 @@ class AdminCubit extends Cubit<AdminState> {
     emit(AdminLoading());
     debugPrint("🔄 Loading dashboard...");
     try {
-      final users = await _service.getUsers();
+      final users = (await _service.getUsers()).cast<AdminUserModel>().toList();
       debugPrint("✅ users loaded: ${users.length}");
 
-      final students = await _service.getStudents();
+      final students = (await _service.getStudents())
+          .cast<AdminStudentModel>()
+          .toList();
       debugPrint("✅ students loaded: ${students.length}");
 
-      final teachers = await _service.getTeachers();
+      final teachers = (await _service.getTeachers())
+          .cast<AdminTeacherModel>()
+          .toList();
       debugPrint("✅ teachers loaded: ${teachers.length}");
 
-      final parents = await _service.getParents();
+      final parents = (await _service.getParents())
+          .cast<AdminParentModel>()
+          .toList();
       debugPrint("✅ parents loaded: ${parents.length}");
 
-      final notifications = await _service.getNotifications();
+      final notifications = (await _service.getNotifications())
+          .cast<AdminNotificationModel>()
+          .toList();
       debugPrint("✅ notifications loaded: ${notifications.length}");
 
       final unread = await _service.getUnreadCount();
       debugPrint("✅ unread loaded: $unread");
 
-      final classrooms = await _service.getClassrooms();
+      final classrooms = (await _service.getClassrooms())
+          .cast<ClassroomModel>()
+          .toList();
       debugPrint("✅ classrooms loaded: ${classrooms.length}");
 
-      final subjects = await _service.getSubjects();
+      final subjects = (await _service.getSubjects())
+          .cast<SubjectModel>()
+          .toList();
       debugPrint("✅ subjects loaded: ${subjects.length}");
 
-      final schedules = await _service.getSchedules();
+      final schedules = (await _service.getSchedules())
+          .cast<ScheduleModel>()
+          .toList();
       debugPrint("✅ schedules loaded: ${schedules.length}");
+
+      // ─── NEW: load attendances, exams, grades ───
+      final attendances = (await _service.getAttendances())
+          .cast<AttendanceModel>()
+          .toList();
+      debugPrint("✅ attendances loaded: ${attendances.length}");
+
+      final exams = (await _service.getExams()).cast<ExamModel>().toList();
+      debugPrint("✅ exams loaded: ${exams.length}");
+
+     final grades = (await _service.getGrades()).cast<GradeModel>().toList();
+      debugPrint("✅ grades loaded: ${grades.length}");
 
       emit(
         AdminLoaded(
@@ -64,9 +97,12 @@ class AdminCubit extends Cubit<AdminState> {
           classrooms: classrooms,
           subjects: subjects,
           schedules: schedules,
+          attendances: attendances,
+          exams: exams,
+          grades: grades,
         ),
       );
-      debugPrint("✅ Dashboard fully loaded");
+      debugPrint("✅ Dashboard fully loaded with all data");
     } catch (e) {
       debugPrint("❌ ERROR loading dashboard: $e");
       emit(AdminError('Something went wrong'));
@@ -291,6 +327,75 @@ class AdminCubit extends Cubit<AdminState> {
     }
   }
 
+  Future<void> changeTeacherRole(
+    int classroomId,
+    int teacherId,
+    String role,
+  ) async {
+    emit(AdminOperationLoading());
+    debugPrint(
+      "🔄 Changing role for teacher ID $teacherId in classroom ID $classroomId to $role",
+    );
+    try {
+      await _service.changeTeacherRole(classroomId, teacherId, role);
+      debugPrint("✅ Teacher role changed to $role");
+      emit(AdminOperationSuccess('Teacher role updated successfully'));
+      await getClassroomById(classroomId);
+    } on DioException catch (e) {
+      debugPrint("❌ Failed to change teacher role: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Failed to change teacher role: $e");
+      emit(AdminOperationError('Failed to update teacher role'));
+    }
+  }
+
+  Future<void> changeSubjectTeacher(
+    int classroomId,
+    int subjectId,
+    int newTeacherId,
+  ) async {
+    emit(AdminOperationLoading());
+    debugPrint(
+      "🔄 Changing teacher for subject ID $subjectId in classroom ID $classroomId to teacher ID $newTeacherId",
+    );
+    try {
+      await _service.changeSubjectTeacher(classroomId, subjectId, newTeacherId);
+      debugPrint("✅ Subject teacher changed");
+      emit(AdminOperationSuccess('Subject teacher updated successfully'));
+      await getClassroomById(classroomId);
+    } on DioException catch (e) {
+      debugPrint("❌ Failed to change subject teacher: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Failed to change subject teacher: $e");
+      emit(AdminOperationError('Failed to update subject teacher'));
+    }
+  }
+
+  Future<void> updateSubjectHours(
+    int classroomId,
+    int subjectId,
+    int weeklyHours,
+  ) async {
+    emit(AdminOperationLoading());
+    debugPrint(
+      "🔄 Updating weekly hours for subject ID $subjectId in classroom ID $classroomId to $weeklyHours hours",
+    );
+    try {
+      await _service.updateSubjectHours(classroomId, subjectId, weeklyHours);
+      debugPrint("✅ Subject hours updated");
+      emit(AdminOperationSuccess('Subject hours updated successfully'));
+      await getClassroomById(classroomId);
+    } on DioException catch (e) {
+      debugPrint("❌ Failed to update subject hours: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Failed to update subject hours: $e");
+      emit(AdminOperationError('Failed to update subject hours'));
+    }
+  }
+
   // ═══════════════════════════════════════
   // PARENTS
   // ═══════════════════════════════════════
@@ -461,25 +566,24 @@ class AdminCubit extends Cubit<AdminState> {
     }
   }
 
- Future<void> getClassroomById(int id) async {
-  emit(AdminLoading());
-  debugPrint("🔄 Loading classroom ID: $id");
-  try {
-    final data = await _service.getClassroomRelationships(id); // ← غيّر السطر ده
-    
-    final classroomJson = Map<String, dynamic>.from(data['classroom']);
-    classroomJson['students'] = data['students'] ?? [];
-    classroomJson['teachers'] = data['teachers'] ?? [];
-    classroomJson['subjects'] = data['subjects'] ?? [];
-    
-    debugPrint("✅ Classroom loaded: ID $id");
-    debugPrint("🔍 students count: ${classroomJson['students'].length}");
-    emit(ClassroomLoaded(ClassroomModel.fromJson(classroomJson)));
-  } catch (e) {
-    debugPrint("❌ Failed to load classroom ID $id: $e");
-    emit(AdminOperationError('Failed to load classroom'));
+  Future<void> getClassroomById(int id) async {
+    emit(AdminLoading());
+    debugPrint("🔄 Loading classroom ID: $id");
+    try {
+      final data = await _service.getClassroomRelationships(id);
+      final classroomJson = Map<String, dynamic>.from(data['classroom']);
+      classroomJson['students'] = data['students'] ?? [];
+      classroomJson['teachers'] = data['teachers'] ?? [];
+      classroomJson['subjects'] = data['subjects'] ?? [];
+      debugPrint("✅ Classroom loaded: ID $id");
+      debugPrint("🔍 students count: ${classroomJson['students'].length}");
+      emit(ClassroomLoaded(ClassroomModel.fromJson(classroomJson)));
+    } catch (e) {
+      debugPrint("❌ Failed to load classroom ID $id: $e");
+      emit(AdminOperationError('Failed to load classroom'));
+    }
   }
-}
+
   Future<void> updateClassroom(int id, Map<String, dynamic> data) async {
     emit(AdminOperationLoading());
     debugPrint("🔄 Updating classroom ID: $id");
@@ -519,10 +623,14 @@ class AdminCubit extends Cubit<AdminState> {
   // ═══════════════════════════════════════
   Future<void> enrollStudent(int classroomId, int studentId) async {
     emit(AdminOperationLoading());
-    debugPrint("🔄 Enrolling student ID $studentId into classroom ID $classroomId");
+    debugPrint(
+      "🔄 Enrolling student ID $studentId into classroom ID $classroomId",
+    );
     try {
       await _service.enrollStudent(classroomId, studentId);
-      debugPrint("✅ Student ID $studentId enrolled into classroom ID $classroomId");
+      debugPrint(
+        "✅ Student ID $studentId enrolled into classroom ID $classroomId",
+      );
       emit(AdminOperationSuccess('Student enrolled successfully'));
       await getClassroomById(classroomId);
     } on DioException catch (e) {
@@ -536,10 +644,14 @@ class AdminCubit extends Cubit<AdminState> {
 
   Future<void> removeStudent(int classroomId, int studentId) async {
     emit(AdminOperationLoading());
-    debugPrint("🔄 Removing student ID $studentId from classroom ID $classroomId");
+    debugPrint(
+      "🔄 Removing student ID $studentId from classroom ID $classroomId",
+    );
     try {
       await _service.removeStudent(classroomId, studentId);
-      debugPrint("✅ Student ID $studentId removed from classroom ID $classroomId");
+      debugPrint(
+        "✅ Student ID $studentId removed from classroom ID $classroomId",
+      );
       emit(AdminOperationSuccess('Student removed'));
       await getClassroomById(classroomId);
     } on DioException catch (e) {
@@ -553,10 +665,14 @@ class AdminCubit extends Cubit<AdminState> {
 
   Future<void> assignTeacher(int classroomId, int teacherId) async {
     emit(AdminOperationLoading());
-    debugPrint("🔄 Assigning teacher ID $teacherId to classroom ID $classroomId");
+    debugPrint(
+      "🔄 Assigning teacher ID $teacherId to classroom ID $classroomId",
+    );
     try {
       await _service.assignTeacher(classroomId, teacherId);
-      debugPrint("✅ Teacher ID $teacherId assigned to classroom ID $classroomId");
+      debugPrint(
+        "✅ Teacher ID $teacherId assigned to classroom ID $classroomId",
+      );
       emit(AdminOperationSuccess('Teacher assigned successfully'));
       await getClassroomById(classroomId);
     } on DioException catch (e) {
@@ -570,10 +686,14 @@ class AdminCubit extends Cubit<AdminState> {
 
   Future<void> removeTeacher(int classroomId, int teacherId) async {
     emit(AdminOperationLoading());
-    debugPrint("🔄 Removing teacher ID $teacherId from classroom ID $classroomId");
+    debugPrint(
+      "🔄 Removing teacher ID $teacherId from classroom ID $classroomId",
+    );
     try {
       await _service.removeTeacher(classroomId, teacherId);
-      debugPrint("✅ Teacher ID $teacherId removed from classroom ID $classroomId");
+      debugPrint(
+        "✅ Teacher ID $teacherId removed from classroom ID $classroomId",
+      );
       emit(AdminOperationSuccess('Teacher removed'));
       await getClassroomById(classroomId);
     } on DioException catch (e) {
@@ -585,12 +705,20 @@ class AdminCubit extends Cubit<AdminState> {
     }
   }
 
-  Future<void> assignSubject(int classroomId, int subjectId, int teacherId) async {
+  Future<void> assignSubject(
+    int classroomId,
+    int subjectId,
+    int teacherId,
+  ) async {
     emit(AdminOperationLoading());
-    debugPrint("🔄 Assigning subject ID $subjectId with teacher ID $teacherId to classroom ID $classroomId");
+    debugPrint(
+      "🔄 Assigning subject ID $subjectId with teacher ID $teacherId to classroom ID $classroomId",
+    );
     try {
       await _service.assignSubject(classroomId, subjectId, teacherId);
-      debugPrint("✅ Subject ID $subjectId assigned to classroom ID $classroomId");
+      debugPrint(
+        "✅ Subject ID $subjectId assigned to classroom ID $classroomId",
+      );
       emit(AdminOperationSuccess('Subject assigned successfully'));
       await getClassroomById(classroomId);
     } on DioException catch (e) {
@@ -604,10 +732,14 @@ class AdminCubit extends Cubit<AdminState> {
 
   Future<void> removeSubject(int classroomId, int subjectId) async {
     emit(AdminOperationLoading());
-    debugPrint("🔄 Removing subject ID $subjectId from classroom ID $classroomId");
+    debugPrint(
+      "🔄 Removing subject ID $subjectId from classroom ID $classroomId",
+    );
     try {
       await _service.removeSubject(classroomId, subjectId);
-      debugPrint("✅ Subject ID $subjectId removed from classroom ID $classroomId");
+      debugPrint(
+        "✅ Subject ID $subjectId removed from classroom ID $classroomId",
+      );
       emit(AdminOperationSuccess('Subject removed'));
       await getClassroomById(classroomId);
     } on DioException catch (e) {
@@ -803,6 +935,599 @@ class AdminCubit extends Cubit<AdminState> {
       debugPrint("❌ Failed to load user details: $e");
       emit(AdminUserDetailsError('Failed to load user details'));
     }
+  }
+
+  // ═══════════════════════════════════════
+  // NEW METHODS FOR STUDENT/TEACHER CLASSROOMS
+  // ═══════════════════════════════════════
+  Future<List<Map<String, dynamic>>> getStudentClassrooms(int studentId) async {
+    try {
+      final classrooms = await _service.getClassrooms();
+      final List<Map<String, dynamic>> studentClassrooms = [];
+      for (final classroom in classrooms) {
+        try {
+          final data = await _service.getClassroomRelationships(classroom.id);
+          final students = data['students'] as List? ?? [];
+          if (students.any((s) => s['id'] == studentId)) {
+            studentClassrooms.add({
+              'id': classroom.id,
+              'name': classroom.name,
+              'grade_level': classroom.gradeLevel,
+              'academic_year': classroom.academicYear,
+            });
+          }
+        } catch (_) {}
+      }
+      return studentClassrooms;
+    } catch (e) {
+      debugPrint("❌ Failed to get student classrooms: $e");
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getTeacherClassrooms(int teacherId) async {
+    try {
+      return await _service.getTeacherClassrooms(teacherId);
+    } catch (e) {
+      debugPrint("❌ Failed to get teacher classrooms: $e");
+      return [];
+    }
+  }
+
+  // ========== ATTENDANCES ==========
+  Future<void> getAttendances() async {
+    debugPrint(
+      "🔄 getAttendances() called — current state: ${state.runtimeType}",
+    );
+    try {
+      final attendances = await _service.getAttendances();
+      debugPrint("✅ attendances fetched: ${attendances.length}");
+      if (state is AdminLoaded) {
+        emit((state as AdminLoaded).copyWith(attendances: attendances));
+
+        debugPrint("✅ state updated with new attendances");
+      } else {
+        debugPrint(
+          "⚠️ state is not AdminLoaded — skipping emit. state: ${state.runtimeType}",
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to load attendances: $e');
+    }
+  }
+
+  Future<void> createAttendance(Map<String, dynamic> data) async {
+    debugPrint("🔄 createAttendance() called with data: $data");
+    try {
+      await _service.createAttendance(data);
+      debugPrint("✅ Attendance created on server");
+      debugPrint("🔄 calling loadDashboard()...");
+      debugPrint("✅ loadDashboard() done — emitting success");
+      emit(AdminOperationSuccess('Attendance created successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in createAttendance: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in createAttendance: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> updateAttendance(int id, Map<String, dynamic> data) async {
+    debugPrint("🔄 updateAttendance() called — id: $id, data: $data");
+    try {
+      await _service.updateAttendance(id, data);
+      debugPrint("✅ Attendance updated on server");
+      debugPrint("🔄 calling loadDashboard()...");
+
+      debugPrint("✅ loadDashboard() done — emitting success");
+      emit(AdminOperationSuccess('Attendance updated successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in updateAttendance: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in updateAttendance: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> deleteAttendance(int id) async {
+    debugPrint("🔄 deleteAttendance() called — id: $id");
+    try {
+      await _service.deleteAttendance(id);
+      debugPrint("✅ Attendance deleted on server");
+      debugPrint("🔄 calling loadDashboard()...");
+
+      debugPrint("✅ loadDashboard() done — emitting success");
+      emit(AdminOperationSuccess('Attendance deleted successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in deleteAttendance: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+      await loadDashboard();
+    } catch (e) {
+      debugPrint("❌ Exception in deleteAttendance: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== EXAMS ==========
+  Future<void> getExams() async {
+    debugPrint("🔄 getExams() called — current state: ${state.runtimeType}");
+    try {
+      final exams = await _service.getExams();
+      debugPrint("✅ exams fetched: ${exams.length}");
+      if (state is AdminLoaded) {
+        emit((state as AdminLoaded).copyWith(exams: exams));
+        debugPrint("✅ state updated with new exams");
+      } else {
+        debugPrint(
+          "⚠️ state is not AdminLoaded — skipping emit. state: ${state.runtimeType}",
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to load exams: $e');
+    }
+  }
+
+  Future<void> createExam(Map<String, dynamic> data) async {
+    debugPrint("🔄 createExam() called with data: $data");
+    try {
+      await _service.createExam(data);
+      debugPrint("✅ Exam created on server");
+      debugPrint("🔄 calling loadDashboard()...");
+
+      debugPrint("✅ loadDashboard() done — emitting success");
+      emit(AdminOperationSuccess('Exam created successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in createExam: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in createExam: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> updateExam(int id, Map<String, dynamic> data) async {
+    debugPrint("🔄 updateExam() called — id: $id, data: $data");
+    try {
+      await _service.updateExam(id, data);
+      debugPrint("✅ Exam updated on server");
+      debugPrint("🔄 calling loadDashboard()...");
+      debugPrint("✅ loadDashboard() done — emitting success");
+      emit(AdminOperationSuccess('Exam updated successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in updateExam: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in updateExam: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> deleteExam(int id) async {
+    debugPrint("🔄 deleteExam() called — id: $id");
+    try {
+      await _service.deleteExam(id);
+      debugPrint("✅ Exam deleted on server");
+      debugPrint("🔄 calling loadDashboard()...");
+      debugPrint("✅ loadDashboard() done — emitting success");
+      emit(AdminOperationSuccess('Exam deleted successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in deleteExam: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in deleteExam: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== GRADES ==========
+  Future<void> getGrades() async {
+    debugPrint("🔄 getGrades() called");
+    try {
+      final grades = await _service.getGrades();
+      if (state is AdminLoaded) {
+        emit((state as AdminLoaded).copyWith(grades: grades));
+        debugPrint("✅ state updated with ${grades.length} grades");
+      } else {
+        debugPrint("⚠️ state is not AdminLoaded, cannot update grades");
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to load grades: $e');
+    }
+  }
+
+  Future<void> createGrade(Map<String, dynamic> data) async {
+    debugPrint("🔄 createGrade() called with data: $data");
+    try {
+      await _service.createGrade(data);
+      debugPrint("✅ Grade created on server");
+      emit(AdminOperationSuccess('Grade created successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in createGrade: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in createGrade: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> updateGrade(int id, Map<String, dynamic> data) async {
+    debugPrint("🔄 updateGrade() called for id: $id");
+    try {
+      await _service.updateGrade(id, data);
+      debugPrint("✅ Grade updated on server");
+      emit(AdminOperationSuccess('Grade updated successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in updateGrade: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in updateGrade: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> deleteGrade(int id) async {
+    debugPrint("🔄 deleteGrade() called for id: $id");
+    try {
+      await _service.deleteGrade(id);
+      debugPrint("✅ Grade deleted on server");
+      emit(AdminOperationSuccess('Grade deleted successfully'));
+      await loadDashboard();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in deleteGrade: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in deleteGrade: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== ASSIGNMENTS ==========
+  Future<void> getAssignments() async {
+    debugPrint(
+      "🔄 getAssignments() called — current state: ${state.runtimeType}",
+    );
+    try {
+      final assignments = await _service.getAssignments();
+      debugPrint("✅ assignments fetched: ${assignments.length}");
+      emit(AssignmentsLoaded(assignments));
+      debugPrint("✅ AssignmentsLoaded emitted");
+    } catch (e) {
+      debugPrint("❌ Failed to load assignments: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> getAssignmentById(int id) async {
+    debugPrint("🔄 getAssignmentById() called — id: $id");
+    try {
+      final assignment = await _service.getAssignmentById(id);
+      debugPrint("✅ assignment fetched: ${assignment.id}");
+      emit(AssignmentLoaded(assignment));
+    } catch (e) {
+      debugPrint("❌ Failed to load assignment $id: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> createAssignment(Map<String, dynamic> data) async {
+    debugPrint("🔄 createAssignment() called with data: $data");
+    emit(AdminOperationLoading());
+    try {
+      await _service.createAssignment(data);
+      debugPrint("✅ Assignment created on server");
+      emit(AdminOperationSuccess('Assignment created successfully'));
+      debugPrint("🔄 calling getAssignments()...");
+      await getAssignments();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in createAssignment: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in createAssignment: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> updateAssignment(int id, Map<String, dynamic> data) async {
+    debugPrint("🔄 updateAssignment() called — id: $id");
+    emit(AdminOperationLoading());
+    try {
+      await _service.updateAssignment(id, data);
+      debugPrint("✅ Assignment updated on server");
+      emit(AdminOperationSuccess('Assignment updated successfully'));
+      debugPrint("🔄 calling getAssignments()...");
+      await getAssignments();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in updateAssignment: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in updateAssignment: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> deleteAssignment(int id) async {
+    debugPrint("🔄 deleteAssignment() called — id: $id");
+    emit(AdminOperationLoading());
+    try {
+      await _service.deleteAssignment(id);
+      debugPrint("✅ Assignment deleted on server");
+      emit(AdminOperationSuccess('Assignment deleted successfully'));
+      debugPrint("🔄 calling getAssignments()...");
+      await getAssignments();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in deleteAssignment: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in deleteAssignment: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== SUBMISSIONS ==========
+  Future<void> getSubmissions() async {
+    debugPrint(
+      "🔄 getSubmissions() called — current state: ${state.runtimeType}",
+    );
+    try {
+      final submissions = await _service.getSubmissions();
+      debugPrint("✅ submissions fetched: ${submissions.length}");
+      emit(SubmissionsLoaded(submissions));
+      debugPrint("✅ SubmissionsLoaded emitted");
+    } catch (e) {
+      debugPrint("❌ Failed to load submissions: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> getSubmissionById(int id) async {
+    debugPrint("🔄 getSubmissionById() called — id: $id");
+    try {
+      final submission = await _service.getSubmissionById(id);
+      debugPrint("✅ submission fetched: ${submission.id}");
+      emit(SubmissionLoaded(submission));
+    } catch (e) {
+      debugPrint("❌ Failed to load submission $id: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> deleteSubmission(int id) async {
+    debugPrint("🔄 deleteSubmission() called — id: $id");
+    emit(AdminOperationLoading());
+    try {
+      await _service.deleteSubmission(id);
+      debugPrint("✅ Submission deleted on server");
+      emit(AdminOperationSuccess('Submission deleted successfully'));
+      debugPrint("🔄 calling getSubmissions()...");
+      await getSubmissions();
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in deleteSubmission: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in deleteSubmission: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> gradeSubmission(
+    int submissionId,
+    Map<String, dynamic> data,
+  ) async {
+    debugPrint(
+      "🔄 gradeSubmission() called — submissionId: $submissionId, data: $data",
+    );
+    emit(AdminOperationLoading());
+    try {
+      await _service.gradeSubmission(submissionId, data);
+      debugPrint("✅ Submission graded on server");
+      emit(AdminOperationSuccess('Submission graded successfully'));
+      debugPrint("🔄 calling getSubmissionById($submissionId)...");
+      await getSubmissionById(submissionId);
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in gradeSubmission: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in gradeSubmission: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> submitAssignment(int assignmentId, FormData formData) async {
+    debugPrint("🔄 submitAssignment() called — assignmentId: $assignmentId");
+    emit(AdminOperationLoading());
+    try {
+      await _service.submitAssignment(assignmentId, formData);
+      debugPrint("✅ Assignment submitted on server");
+      emit(AdminOperationSuccess('Assignment submitted successfully'));
+    } on DioException catch (e) {
+      debugPrint("❌ DioException in submitAssignment: ${_handleDioError(e)}");
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      debugPrint("❌ Exception in submitAssignment: $e");
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== FILES ==========
+  Future<void> uploadFile(FormData formData) async {
+    emit(AdminOperationLoading());
+    try {
+      await _service.uploadFile(formData);
+      emit(AdminOperationSuccess('File uploaded successfully'));
+    } on DioException catch (e) {
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> uploadMultipleFiles(FormData formData) async {
+    emit(AdminOperationLoading());
+    try {
+      await _service.uploadMultipleFiles(formData);
+      emit(AdminOperationSuccess('Files uploaded successfully'));
+    } on DioException catch (e) {
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> deleteFile(String filePath) async {
+    emit(AdminOperationLoading());
+    try {
+      await _service.deleteFile(filePath);
+      emit(AdminOperationSuccess('File deleted successfully'));
+    } on DioException catch (e) {
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== MESSAGES ==========
+  Future<void> getMessages({String? type, int? studentId}) async {
+    emit(AdminLoading());
+    try {
+      final messages = await _service.getMessages(
+        type: type,
+        studentId: studentId,
+      );
+      emit(MessagesLoaded(messages));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> sendMessage(Map<String, dynamic> data) async {
+    emit(AdminOperationLoading());
+    try {
+      await _service.sendMessage(data);
+      emit(AdminOperationSuccess('Message sent successfully'));
+      await getMessages();
+    } on DioException catch (e) {
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<int> getMessagesUnreadCount() async {
+    try {
+      return await _service.getMessagesUnreadCount();
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<void> getAvailableParents({String? search}) async {
+    emit(AdminLoading());
+    try {
+      await _service.getAvailableParents(search: search);
+      // You may store the result in a local variable; for now just emit success
+      emit(AdminOperationSuccess('Parents loaded'));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== RESOURCES ==========
+  Future<void> getResources({
+    String? type,
+    int? subjectId,
+    String? search,
+  }) async {
+    emit(AdminLoading());
+    try {
+      final resources = await _service.getResources(
+        type: type,
+        subjectId: subjectId,
+        search: search,
+      );
+      emit(ResourcesLoaded(resources));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> uploadResource(FormData formData) async {
+    emit(AdminOperationLoading());
+    try {
+      await _service.uploadResource(formData);
+      emit(AdminOperationSuccess('Resource uploaded successfully'));
+      await getResources();
+    } on DioException catch (e) {
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> downloadResource(int id) async {
+    emit(AdminOperationLoading());
+    try {
+      await _service.downloadResource(id);
+      emit(AdminOperationSuccess('Resource download info retrieved'));
+    } on DioException catch (e) {
+      emit(AdminOperationError(_handleDioError(e)));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> getMyResources({String? type}) async {
+    emit(AdminLoading());
+    try {
+      final resources = await _service.getMyResources(type: type);
+      emit(ResourcesLoaded(resources));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> getPopularResources() async {
+    emit(AdminLoading());
+    try {
+      final resources = await _service.getPopularResources();
+      emit(ResourcesLoaded(resources));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  // ========== TEACHER "ME" ENDPOINTS ==========
+  Future<void> getMyClassrooms() async {
+    emit(AdminLoading());
+    try {
+      final classrooms = await _service.getMyClassrooms();
+      emit(TeacherClassroomsLoaded(classrooms));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  Future<void> getMyStudents() async {
+    emit(AdminLoading());
+    try {
+      final students = await _service.getMyStudents();
+      emit(TeacherStudentsLoaded(students));
+    } catch (e) {
+      emit(AdminOperationError(_handleError(e)));
+    }
+  }
+
+  String _handleError(Object e) {
+    return e.toString();
   }
 
   // ═══════════════════════════════════════

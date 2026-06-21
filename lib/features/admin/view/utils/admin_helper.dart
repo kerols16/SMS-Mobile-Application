@@ -125,23 +125,33 @@ class AdminHelper {
     required String label,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: cardDecoration(),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center, // center vertically
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          Icon(icon, size: 28, color: color),
+          const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF374151),
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
@@ -165,7 +175,7 @@ class AdminHelper {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(fontSize: 12, color: color),

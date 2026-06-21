@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:school_test/features/auth/view/cubit/auth_cubit.dart';
+import 'package:school_test/features/auth/view_model/cubit/auth_cubit.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,11 +22,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
-          // الـ role جاي من الـ API مش من الـ UI
           context.go('/${state.user.role}');
         }
         if (state is AuthError) {
@@ -36,13 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       },
       child: Scaffold(
-        resizeToAvoidBottomInset: true, // مهم جداً للـ Keyboard
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: Stack(
             children: [
-              // خلفية التدرج للجزء العلوي
+              // Colored header – 28% of screen height (responsive)
               Container(
-                height: screenSize.height * 0.28, // 28% بدلاً من 20%
+                height: screenSize.height * 0.28,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -52,63 +52,59 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              // المحتوى الرئيسي
+              // Scrollable content
               SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                  bottom: 100,
-                ), // مساحة للـ Bottom Section
+                // Bottom padding = height of the fixed button section + safe area
+                padding: EdgeInsets.only(
+                  bottom: 80 + bottomPadding,
+                  top: 0,
+                  left: 20,
+                  right: 20,
+                ),
                 child: Column(
                   children: [
-                    // الهيدر مع الشعار والنص
-                    SizedBox(
-                      height: screenSize.height * 0.28,
-                      child: Stack(
+                    // Logo area – spacing is relative to screen height
+                    SizedBox(height: screenSize.height * 0.08),
+                    Center(
+                      child: Column(
                         children: [
-                          // Language Toggle
-                          // Logo & Welcome
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(24),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.school,
-                                    color: Color(0xFF2563EB),
-                                    size: 48,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Welcome to Springfield High',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
+                            ),
+                            child: const Icon(
+                              Icons.school,
+                              color: Color(0xFF2563EB),
+                              size: 48,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'School Management System',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    //Transform.translate
+                    SizedBox(height: screenSize.height * 0.04),
+
+                    // Form card – takes remaining space naturally
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
@@ -123,14 +119,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Email Input
+                            // Email field
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Email or Phone',
+                                  'Email',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -142,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
                                   decoration: InputDecoration(
-                                    hintText: 'Enter your email or phone',
+                                    hintText: 'Enter your email',
                                     hintStyle: const TextStyle(
                                       color: Color(0xFF9CA3AF),
                                     ),
@@ -194,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 16),
 
-                            // Password Input
+                            // Password field
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -258,45 +253,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   onChanged: (_) => setState(() {}),
                                 ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    onPressed: () {},
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 12,
-                                      ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: const Text(
-                                      'Forgot password?',
-                                      style: TextStyle(
-                                        color: Color(0xFF2563EB),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
-
-                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
                     ),
 
-                    // Bottom Section
-                    const SizedBox(height: 100),
+                    // Extra space before the fixed button (ensures clean scroll)
+                    SizedBox(height: screenSize.height * 0.02),
                   ],
                 ),
               ),
 
-              // Bottom Fixed Section
+              // Fixed bottom button section
               Positioned(
                 left: 0,
                 right: 0,
@@ -312,74 +282,39 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                   child: SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Remember Me
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: Checkbox(
-                                value: _rememberMe,
-                                onChanged: (value) {
-                                  setState(() => _rememberMe = value ?? false);
-                                },
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Remember me',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF4B5563),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // Sign In Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _hasCredentials
-                                ? () {
-                                    context.read<AuthCubit>().login(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _hasCredentials
+                            ? () {
+                                context.read<AuthCubit>().login(
                                       _emailController.text.trim(),
                                       _passwordController.text.trim(),
                                     );
-                                  }
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2563EB),
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: const Color(
-                                0xFF2563EB,
-                              ).withOpacity(0.4),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              'Sign In',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              const Color(0xFF2563EB).withOpacity(0.4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

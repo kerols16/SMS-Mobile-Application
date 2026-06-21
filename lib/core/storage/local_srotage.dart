@@ -56,4 +56,35 @@ class LocalStorage {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(StorageKeys.originalRole);
   }
+
+  // ── Generic Get/Save ──
+  static Future<String?> get(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
+  }
+
+  static Future<void> save(String key, String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
+  }
+
+  // ── Teacher ID ──
+  static Future<void> saveTeacherId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('teacher_id', id);
+  }
+
+  static Future<String?> getTeacherId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('teacher_id');
+  }
+  static Future<String?> getUserEmail() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('user_email');
+}
+
+static Future<void> clearAll() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
+}
 }

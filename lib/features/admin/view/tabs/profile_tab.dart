@@ -17,7 +17,7 @@ class ProfileTab extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
-          const Text('Profile & Settings', style: AdminHelper.pageTitle),
+          const Text('Profile', style: AdminHelper.pageTitle),
           const SizedBox(height: 24),
 
           Container(
@@ -74,16 +74,6 @@ class ProfileTab extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-
-          Container(
-            decoration: AdminHelper.cardDecoration(),
-            child: Column(children: [
-              AdminHelper.buildSettingItem('Notification Settings', Icons.notifications_outlined),
-              AdminHelper.buildSettingItem('Language & Region',     Icons.language),
-              AdminHelper.buildSettingItem('Data Export',           Icons.download_outlined),
-              AdminHelper.buildSettingItem('Help & Support',        Icons.help_outline),
-            ]),
-          ),
 
           const SizedBox(height: 24),
 

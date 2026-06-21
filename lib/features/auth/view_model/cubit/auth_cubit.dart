@@ -19,6 +19,7 @@ class AuthCubit extends Cubit<AuthState> {
       await LocalStorage.saveToken(user.token);
       await LocalStorage.saveToken(user.token);
       await LocalStorage.saveOriginalRole(user.role);
+      await LocalStorage.save('user_id', user.id.toString());
 
       // super_admin → save as admin for routing
       final roleToSave = user.role == 'super_admin' ? 'admin' : user.role;

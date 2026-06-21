@@ -22,7 +22,7 @@ class DashboardTab extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
         delegate: SliverChildListDelegate([
-          const SizedBox(height: 16),
+          
           GridView.count(
             crossAxisCount: 2, crossAxisSpacing: 16, mainAxisSpacing: 16,
             shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
@@ -33,9 +33,8 @@ class DashboardTab extends StatelessWidget {
               AdminHelper.buildStatCard(icon: Icons.notifications_active, color: Colors.orange, value: state.unreadCount.toString(),     label: 'Unread Notifications'),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 15),
           const Text('Quick Actions', style: AdminHelper.sectionTitle),
-          const SizedBox(height: 16),
           GridView.count(
             crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
             shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),

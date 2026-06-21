@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:school_test/core/constants/routes_contents.dart';
 import 'package:school_test/core/storage/local_srotage.dart';
+import 'package:school_test/features/admin/view/academics_sections/overview_section.dart';
 import 'package:school_test/features/admin/view/tabs/academics_tab.dart';
 import 'package:school_test/features/admin/view/tabs/notifications_tab.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../../core/widgets/bottom_nav.dart';
 import '../../veiw_model/cubit/admin_cubit.dart';
 import '../tabs/dashboard_tab.dart';
@@ -72,8 +74,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   slivers: [
                     _buildHeader(state),
                     if (state is AdminLoading)
-                      const SliverFillRemaining(
-                        child: Center(child: CircularProgressIndicator()),
+                      SliverPadding(
+                        padding: const EdgeInsets.all(24),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            const SizedBox(height: 16),
+                            _buildShimmerGrid(),
+                            const SizedBox(height: 24),
+                            _buildShimmerList(),
+                          ]),
+                        ),
                       )
                     else if (state is AdminError)
                       SliverFillRemaining(
@@ -138,6 +148,49 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerGrid() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: List.generate(
+          4,
+          (_) => Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerList() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Column(
+        children: List.generate(
+          5,
+          (_) => Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            height: 72,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
       ),
     );

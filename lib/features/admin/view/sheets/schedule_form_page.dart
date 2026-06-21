@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:school_test/features/admin/data/models/classroom_model.dart';
 import 'package:school_test/features/admin/data/models/schedule_model.dart';
 import 'package:school_test/features/admin/data/models/subject_model.dart';
-import 'package:school_test/features/admin/data/models/teacher_model.dart';
+import 'package:school_test/features/admin/data/models/admin_teacher_model.dart';
 import 'package:school_test/features/admin/veiw_model/cubit/admin_cubit.dart';
 import 'package:school_test/features/admin/view/utils/admin_helper.dart';
 
@@ -31,6 +31,71 @@ class _ScheduleFormPageState extends State<ScheduleFormPage> {
   List<ClassroomModel> _classrooms = [];
   List<SubjectModel> _subjects = [];
   List<AdminTeacherModel> _teachers = [];
+
+  // Helper: check if string matches HH:MM (24h)
+  bool _isValidTime(String time) {
+    final regex = RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$');
+    return regex.hasMatch(time);
+  }
+
+  String? _validateStartTime(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Start time is required';
+    }
+    final trimmed = value.trim();
+    if (!_isValidTime(trimmed)) {
+      return 'Use format HH:MM (e.g., 08:30, 14:00)';
+    }
+    return null;
+  }
+
+  String? _validateEndTime(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'End time is required';
+    }
+    final trimmed = value.trim();
+    if (!_isValidTime(trimmed)) {
+      return 'Use format HH:MM (e.g., 09:45, 16:00)';
+    }
+    // Optional: check that end time > start time
+    if (_startCtrl.text.trim().isNotEmpty && _isValidTime(_startCtrl.text.trim())) {
+      final startMinutes = _timeToMinutes(_startCtrl.text.trim());
+      final endMinutes = _timeToMinutes(trimmed);
+      if (endMinutes <= startMinutes) {
+        return 'End time must be after start time';
+      }
+    }
+    return null;
+  }
+
+  int _timeToMinutes(String time) {
+    final parts = time.split(':');
+    return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+  }
+
+  // Show time picker and update controller
+  Future<void> _selectTime(TextEditingController controller) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _parseTimeFromController(controller),
+      builder: (context, child) => child!,
+    );
+    if (picked != null) {
+      final formatted = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      controller.text = formatted;
+      // Trigger validation again
+      _formKey.currentState?.validate();
+    }
+  }
+
+  TimeOfDay _parseTimeFromController(TextEditingController controller) {
+    final text = controller.text.trim();
+    if (_isValidTime(text)) {
+      final parts = text.split(':');
+      return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    }
+    return TimeOfDay.now();
+  }
 
   @override
   void initState() {
@@ -152,9 +217,37 @@ class _ScheduleFormPageState extends State<ScheduleFormPage> {
                             onChanged: (v) => setState(() => _dayOfWeek = v!),
                           ),
                           const SizedBox(height: 16),
-                          AdminHelper.buildTextField('Start Time (HH:MM)', _startCtrl, isRequired: true),
+                          // Start Time field with picker & validation
+                          TextFormField(
+                            controller: _startCtrl,
+                            decoration: InputDecoration(
+                              labelText: 'Start Time (HH:MM) *',
+                              border: const OutlineInputBorder(),
+                              hintText: 'e.g., 08:30',
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.access_time),
+                                onPressed: () => _selectTime(_startCtrl),
+                              ),
+                            ),
+                            keyboardType: TextInputType.datetime,
+                            validator: _validateStartTime,
+                          ),
                           const SizedBox(height: 16),
-                          AdminHelper.buildTextField('End Time (HH:MM)', _endCtrl, isRequired: true),
+                          // End Time field with picker & validation
+                          TextFormField(
+                            controller: _endCtrl,
+                            decoration: InputDecoration(
+                              labelText: 'End Time (HH:MM) *',
+                              border: const OutlineInputBorder(),
+                              hintText: 'e.g., 10:45',
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.access_time),
+                                onPressed: () => _selectTime(_endCtrl),
+                              ),
+                            ),
+                            keyboardType: TextInputType.datetime,
+                            validator: _validateEndTime,
+                          ),
                           const SizedBox(height: 16),
                           AdminHelper.buildTextField('Room Number', _roomCtrl),
                           const SizedBox(height: 16),

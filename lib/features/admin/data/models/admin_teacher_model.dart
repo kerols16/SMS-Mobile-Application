@@ -1,6 +1,6 @@
 class AdminTeacherModel {
   final int id;
-  final int userId ;
+  final int userId;
   final String teacherId;
   final String gender;
   final String address;
@@ -10,6 +10,10 @@ class AdminTeacherModel {
   final String subjectSpecialization;
   final String name;
   final String email;
+  // NEW: relationships
+  final List<dynamic> classrooms;
+  final List<dynamic> subjects;
+  final List<dynamic> schedules;
 
   AdminTeacherModel({
     required this.id,
@@ -23,22 +27,27 @@ class AdminTeacherModel {
     required this.subjectSpecialization,
     required this.name,
     required this.email,
+    this.classrooms = const [],
+    this.subjects = const [],
+    this.schedules = const [],
   });
 
   factory AdminTeacherModel.fromJson(Map<String, dynamic> json) {
     return AdminTeacherModel(
       userId: json['user_id'],
-      id:                    json['id'] ?? 0,
-      teacherId:             json['teacher_id'] ?? '',
-      gender:                json['gender'] ?? '',
-      address:               json['address'] ?? '',
-      phone:                 json['phone'] ?? '',
-      hireDate:              json['hire_date'] ?? '',
-      qualification:         json['qualification'] ?? '',
+      id: json['id'] ?? 0,
+      teacherId: json['teacher_id'] ?? '',
+      gender: json['gender'] ?? '',
+      address: json['address'] ?? '',
+      phone: json['phone'] ?? '',
+      hireDate: json['hire_date'] ?? '',
+      qualification: json['qualification'] ?? '',
       subjectSpecialization: json['subject_specialization'] ?? '',
-
-      name:  json['user']?['name'] ?? 'Unknown',
+      name: json['user']?['name'] ?? 'Unknown',
       email: json['user']?['email'] ?? 'No Email',
+      classrooms: json['classrooms'] ?? [],
+      subjects: json['subjects'] ?? [],
+      schedules: json['schedules'] ?? [],
     );
   }
 }

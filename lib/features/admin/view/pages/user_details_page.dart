@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:school_test/features/admin/data/models/student_model.dart';
-import 'package:school_test/features/admin/data/models/teacher_model.dart';
-import 'package:school_test/features/admin/data/models/parent_model.dart';
+import 'package:school_test/features/admin/data/models/admin_student_model.dart';
+import 'package:school_test/features/admin/data/models/admin_teacher_model.dart';
+import 'package:school_test/features/admin/data/models/admin_parent_model.dart';
 import 'package:school_test/features/admin/veiw_model/cubit/admin_cubit.dart';
+import 'package:school_test/features/admin/view/pages/classroom_details_page.dart';
 import 'package:school_test/features/admin/view/utils/admin_helper.dart';
 
 class UserDetailsPage extends StatefulWidget {
   final int userId;
   final String role;
+  final bool isSuperAdmin;
+  final AdminLoaded? allData; // NEW: optional allData for navigation
 
-  const UserDetailsPage({super.key, required this.userId, required this.role});
+  const UserDetailsPage({
+    super.key,
+    required this.userId,
+    required this.role,
+    required this.isSuperAdmin,
+    this.allData,
+  });
 
   @override
   State<UserDetailsPage> createState() => _UserDetailsPageState();
@@ -18,6 +27,13 @@ class UserDetailsPage extends StatefulWidget {
 
 class _UserDetailsPageState extends State<UserDetailsPage> {
   bool _isEditMode = false;
+  bool get _canManageUser {
+    if (widget.isSuperAdmin) {
+      return true;
+    }
+
+    return widget.role != 'admin' && widget.role != 'super_admin';
+  }
 
   // Edit controllers
   final _nameCtrl = TextEditingController();
@@ -71,17 +87,23 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     final cubit = context.read<AdminCubit>();
     final role = widget.role;
 
+    final newName = _nameCtrl.text.trim();
+    final newEmail = _emailCtrl.text.trim();
+
+    // Only include email in the request if it actually changed
+    final emailChanged = newEmail != state.user.email;
+
     if (role == 'student' && state.student != null) {
       cubit.updateStudent(state.student!.id, {
-        'name': _nameCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
+        'name': newName,
+        if (emailChanged) 'email': newEmail,
         'phone': _phoneCtrl.text.trim(),
         'address': _addressCtrl.text.trim(),
       });
     } else if (role == 'teacher' && state.teacher != null) {
       cubit.updateTeacher(state.teacher!.id, {
-        'name': _nameCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
+        'name': newName,
+        if (emailChanged) 'email': newEmail,
         'phone': _phoneCtrl.text.trim(),
         'address': _addressCtrl.text.trim(),
         'qualification': _qualCtrl.text.trim(),
@@ -89,8 +111,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       });
     } else if (role == 'parent' && state.parent != null) {
       cubit.updateParent(state.parent!.id, {
-        'name': _nameCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
+        'name': newName,
+        if (emailChanged) 'email': newEmail,
         'phone': _phoneCtrl.text.trim(),
         'address': _addressCtrl.text.trim(),
         'occupation': _occuCtrl.text.trim(),
@@ -98,8 +120,8 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     } else {
       cubit.updateUser(
         state.user.id,
-        name: _nameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
+        name: newName,
+        email: emailChanged ? newEmail : null,
       );
     }
   }
@@ -189,7 +211,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 
   // ═══════════════════════════════════════
-  // APP BAR 
+  // APP BAR
   // ═══════════════════════════════════════
   SliverAppBar _buildAppBar(
     BuildContext context,
@@ -208,7 +230,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
       ),
       actions: [
-        if (!_isEditMode) ...[
+        ...[
           IconButton(
             onPressed: () {
               _populateControllers(state);
@@ -223,26 +245,9 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                   context.read<AdminCubit>().deleteUser(state.user.id);
                   context.read<AdminCubit>().loadDashboard();
                   Navigator.pop(context);
-
                 }),
             icon: const Icon(Icons.delete_outline, color: Colors.white),
             tooltip: 'Delete',
-          ),
-        ] else ...[
-          TextButton(
-            onPressed: () => _saveChanges(context, state),
-            child: const Text(
-              'Save',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => setState(() => _isEditMode = false),
-            icon: const Icon(Icons.close, color: Colors.white),
           ),
         ],
       ],
@@ -276,7 +281,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     child: Text(
                       state.user.name[0].toUpperCase(),
                       style: const TextStyle(
-                        fontSize: 32, 
+                        fontSize: 32,
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
@@ -287,7 +292,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 Text(
                   state.user.name,
                   style: const TextStyle(
-                    fontSize: 18, 
+                    fontSize: 18,
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -322,22 +327,21 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12), 
+                const SizedBox(height: 12),
               ],
             ),
           ),
         ),
       ),
     );
-  } // ═══════════════════════════════════════
+  }
 
+  // ═══════════════════════════════════════
   // VIEW MODE BODY
   // ═══════════════════════════════════════
   Widget _buildViewModeBody(AdminUserDetailsLoaded state) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(
-        24,
-      ).copyWith(bottom: 40),
+      padding: const EdgeInsets.all(24).copyWith(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -345,6 +349,20 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           if (state.student != null) _buildStudentInfo(state.student!),
           if (state.teacher != null) _buildTeacherInfo(state.teacher!),
           if (state.parent != null) _buildParentInfo(state.parent!),
+
+          if (state.student != null && state.student!.parents.isNotEmpty)
+            _buildParentsSection(state.student!.parents),
+
+          // NEW: Schedules for teacher
+          if (state.teacher != null && state.teacher!.schedules.isNotEmpty)
+            _buildSchedulesSection(state.teacher!),
+          // NEW: Enrolled Classrooms for student
+          if (state.student != null)
+            _buildStudentClassroomsSection(state.student!.id),
+
+          // NEW: My Classrooms for teacher
+          if (state.teacher != null)
+            _buildTeacherClassroomsSection(state.teacher!.id),
 
           const SizedBox(height: 16),
 
@@ -395,8 +413,201 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     );
   }
 
+  // NEW: Student enrolled classrooms section
+  Widget _buildStudentClassroomsSection(int studentId) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: context.read<AdminCubit>().getStudentClassrooms(studentId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final classrooms = snapshot.data ?? [];
+        if (classrooms.isEmpty) {
+          return const SizedBox();
+        }
+        return _buildSection('Enrolled Classrooms', [
+          ...classrooms.map((c) {
+            return _buildClassroomTile(c, isStudent: true);
+          }),
+        ]);
+      },
+    );
+  }
+
+  // NEW: Teacher classrooms section
+  Widget _buildTeacherClassroomsSection(int teacherId) {
+    return FutureBuilder<List<dynamic>>(
+      future: context.read<AdminCubit>().getTeacherClassrooms(teacherId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final classrooms = snapshot.data ?? [];
+        if (classrooms.isEmpty) {
+          return const SizedBox();
+        }
+        return _buildSection('My Classrooms', [
+          ...classrooms.map((c) {
+            return _buildClassroomTile(c, isStudent: false);
+          }),
+        ]);
+      },
+    );
+  }
+
+  Widget _buildParentsSection(List<dynamic> parents) {
+    final parentWidgets = parents.map<Widget>((p) {
+      final user = p['user'] as Map<String, dynamic>?;
+      final name = user?['name'] ?? p['name'] ?? 'Unknown';
+      final email = user?['email'] ?? '';
+      final phone = p['phone'] ?? '';
+      final occupation = p['occupation'] ?? 'N/A';
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Text(
+                name,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Text(email, style: const TextStyle(color: Colors.grey)),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(phone, style: const TextStyle(color: Colors.grey)),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                occupation,
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+
+    return _buildSection('Parents (${parents.length})', parentWidgets);
+  }
+
+  Widget _buildSchedulesSection(AdminTeacherModel teacher) {
+    // Build lookup maps from teacher's classrooms and subjects
+    final classroomMap = {
+      for (var c in teacher.classrooms) c['id']: c['name'] ?? 'Unknown',
+    };
+    final subjectMap = {
+      for (var s in teacher.subjects) s['id']: s['name'] ?? 'Unknown',
+    };
+
+    final scheduleWidgets = teacher.schedules.map<Widget>((s) {
+      final day = s['day_of_week']?.toString().toUpperCase() ?? '';
+      final start = s['start_time'] ?? '';
+      final end = s['end_time'] ?? '';
+      final room = s['room_number'] ?? '';
+      final classroomName =
+          classroomMap[s['classroom_id']] ?? 'Classroom ${s['classroom_id']}';
+      final subjectName =
+          subjectMap[s['subject_id']] ?? 'Subject ${s['subject_id']}';
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+      
+        child: Row(
+          children: [
+            SizedBox(width:15),
+            SizedBox(
+              width: 100,
+              child: Text(
+                day,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+            SizedBox(
+              width: 80,
+              child: Text(
+                '$start - $end',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                '$classroomName • $subjectName',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+            SizedBox(
+              width: 60,
+              child: Text(room, style: const TextStyle(color: Colors.grey)),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+
+    return _buildSection(
+      'Schedules (${teacher.schedules.length})',
+      scheduleWidgets,
+    );
+  }
+
+  Widget _buildClassroomTile(dynamic classroom, {required bool isStudent}) {
+    String name;
+    String grade;
+    String? role;
+    int? studentCount;
+    if (isStudent) {
+      // classroom is Map from getStudentClassrooms
+      name = classroom['name'] ?? 'Unknown';
+      grade = classroom['grade_level'] ?? '';
+    } else {
+      // classroom is from API response (contains pivot maybe)
+      name = classroom['name'] ?? 'Unknown';
+      grade = classroom['grade_level'] ?? '';
+      role = classroom['pivot']?['role'] as String?;
+      studentCount = (classroom['students'] as List?)?.length;
+    }
+
+    return ListTile(
+      leading: const Icon(Icons.class_),
+      title: Text(name),
+      subtitle: Text(
+        grade +
+            (role != null ? ' • Role: $role' : '') +
+            (studentCount != null ? ' • $studentCount students' : ''),
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: () {
+        // Navigate only if allData is provided
+        if (widget.allData != null) {
+          final classroomId = isStudent ? classroom['id'] : classroom['id'];
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ClassroomDetailsPage(
+                classroomId: classroomId,
+                allData: widget.allData!,
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
   // ═══════════════════════════════════════
-  // EDIT MODE BODY 
+  // EDIT MODE BODY
   // ═══════════════════════════════════════
   Widget _buildEditModeBody(
     BuildContext context,
@@ -508,7 +719,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   }
 
   // ═══════════════════════════════════════
-  // WIDGETS 
+  // WIDGETS
   // ═══════════════════════════════════════
   Widget _buildStudentInfo(AdminStudentModel s) {
     return _buildSection('Student Info', [

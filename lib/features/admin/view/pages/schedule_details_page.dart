@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:school_test/features/admin/data/models/classroom_model.dart';
 import 'package:school_test/features/admin/data/models/schedule_model.dart';
 import 'package:school_test/features/admin/data/models/subject_model.dart';
-import 'package:school_test/features/admin/data/models/teacher_model.dart';
+import 'package:school_test/features/admin/data/models/admin_teacher_model.dart';
 import 'package:school_test/features/admin/veiw_model/cubit/admin_cubit.dart';
 import 'package:school_test/features/admin/view/utils/admin_helper.dart';
 
